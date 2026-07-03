@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, Depends
+from fastapi import APIRouter, UploadFile, File, Form, Depends, Request
 from sqlalchemy.orm import Session
 from backend.ai.service import handle_user_input
 from backend.database import get_db
@@ -41,6 +41,7 @@ async def chat(
 
 @router.get("/history")
 def get_chat_history(
+    request: Request,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -52,12 +53,22 @@ def get_chat_history(
         .order_by(Message.created_at.asc())
         .all()
     )
+    history = []
+    for msg in messages:
+        image_url = None
+        if msg.image_path:
+            image_url = (
+                str(request.base_url)
+                + str(msg.image_path).replace("\\", "/")
+            )
+        history.append({
 
-    return [
-        {
             "role": msg.role,
+
             "content": msg.content,
-            "image": msg.image_path
-        }
-        for msg in messages
-    ]
+
+            "image": image_url
+
+        })
+
+    return history

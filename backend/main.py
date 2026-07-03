@@ -36,9 +36,6 @@ app.include_router(drives_router, prefix="/drives", tags=["Drives"])
 app.include_router(user_router, prefix="/user", tags=["User"])
 app.include_router(ai_router, prefix="/ai", tags=["AI"])
 
-# Mount frontend static files
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
-
 @app.get("/")
 def root():
     return {"message": "Clean Connect backend running"}

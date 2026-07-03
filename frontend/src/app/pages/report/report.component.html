@@ -1,0 +1,115 @@
+<div class="container mt-4">
+
+  <div class="card">
+
+    <div class="card-body">
+
+      <h2 class="mb-4">Report an Issue</h2>
+
+      <div
+        *ngIf="errorMessage"
+        class="alert alert-danger">
+
+        {{ errorMessage }}
+
+      </div>
+
+      <div
+        *ngIf="successMessage"
+        class="alert alert-success">
+
+        {{ successMessage }}
+
+      </div>
+
+      <form [formGroup]="reportForm" (ngSubmit)="onSubmit()">
+
+        <div class="mb-3">  
+
+          <label class="form-label">
+            Upload Image
+          </label>
+
+          <input
+            type="file"
+            class="form-control"
+            accept="image/*"
+            (change)="onFileSelected($event)">
+
+        </div>
+
+        <div *ngIf="imagePreview" class="mb-3">
+
+          <img
+            [src]="imagePreview"
+            class="img-fluid rounded preview-image"
+            alt="Preview">
+
+        </div>
+        <div class="mb-3">
+
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="getLocation()">
+
+            Use Current Location
+
+          </button>
+          <br><br>
+          <div class="mb-3">
+
+            <label class="form-label">
+              Latitude
+            </label>
+
+            <input
+              class="form-control"
+              formControlName="latitude"
+              readonly>
+
+          </div>
+
+          <div class="mb-3">
+
+            <label class="form-label">
+              Longitude
+            </label>
+
+            <input
+              class="form-control"
+              formControlName="longitude"
+              readonly>
+
+          </div>
+
+        </div>
+
+        <div class="mb-3">
+
+          <label class="form-label">
+            Description
+          </label>
+
+          <textarea
+            rows="4"
+            class="form-control"
+            formControlName="description">
+          </textarea>
+
+        </div>
+        <button
+          type="submit"
+          class="btn btn-success">
+
+          Submit Report
+
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>

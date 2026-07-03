@@ -1,0 +1,94 @@
+<div mat-dialog-title class="dialog-header">
+
+  <h2 class="mb-0">
+    Drive Details
+  </h2>
+
+  <button
+    mat-icon-button
+    (click)="closeDialog()">
+
+    <mat-icon>close</mat-icon>
+
+  </button>
+
+</div>
+
+<div mat-dialog-content>
+
+  <img
+    [src]="drive.image"
+    class="img-fluid rounded mb-3"
+    alt="Drive Image">
+
+  <h4>
+    {{ drive.description }}
+  </h4>
+
+  <p>
+    <strong>Organized by:</strong>
+    {{ drive.organized_by }}
+  </p>
+
+  <p>
+    <strong>Participants:</strong>
+    {{ drive.participant_count }}
+  </p>
+
+  <p>
+    <strong>Scheduled:</strong>
+    {{ drive.scheduled_at | date:'medium' }}
+  </p>
+
+  <p>
+    <strong>Related Report:</strong>
+    {{ drive.report.description }}
+  </p>
+
+  <p>
+    <strong>Latitude:</strong>
+    {{ drive.latitude }}
+  </p>
+
+  <p>
+    <strong>Longitude:</strong>
+    {{ drive.longitude }}
+  </p>
+
+  <div
+    *ngIf="successMessage"
+    class="alert alert-success">
+
+    {{ successMessage }}
+
+  </div>
+
+  <div
+    *ngIf="errorMessage"
+    class="alert alert-danger">
+
+    {{ errorMessage }}
+
+  </div>
+
+  <div class="d-flex gap-2 mt-3">
+
+    <button
+      class="btn btn-success"
+      (click)="joinDrive()">
+
+      Join Drive
+
+    </button>
+
+    <button
+      class="btn btn-outline-danger"
+      (click)="leaveDrive()">
+
+      Leave Drive
+
+    </button>
+
+  </div>
+
+</div>

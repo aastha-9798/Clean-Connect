@@ -1,0 +1,100 @@
+<div class="container mt-4">
+
+  <h2 class="mb-4">My Reports</h2>
+
+  <p>Total Reports: {{ reports.length }}</p>
+
+  <div class="row">
+
+    <div
+      *ngFor="let report of reports"
+      class="col-md-4 mb-4">
+
+      <div class="card h-100">
+
+        <img
+          [src]="report.image_url"
+          class="card-img-top report-image"
+          alt="Report Image">
+
+        <div class="card-body">
+
+          <h5 class="card-title">
+            Report #{{ report.id }}
+          </h5>
+
+          <p class="card-text">
+            {{ report.description }}
+          </p>
+
+          <p>
+            Status:
+            <span class="badge text-bg-warning">
+              {{ report.status }}
+            </span>
+          </p>
+
+          <p>
+            Created:
+            {{ report.created_at | date:'medium' }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  <h2 class="mb-4 mt-5">My Drives</h2>
+  <p>Total Drives: {{ drives.length }}</p>
+  <div class="row">
+
+    <div
+      *ngFor="let drive of drives"
+      class="col-md-4 mb-4">
+
+      <div class="card h-100">
+
+        <img
+          [src]="drive.image"
+          class="card-img-top report-image"
+          alt="Drive Image">
+
+        <div class="card-body">
+
+          <h5 class="card-title">
+            Drive #{{ drive.drive_id }}
+          </h5>
+
+          <p class="card-text">
+            {{ drive.description }}
+          </p>
+
+          <p>
+            Participants:
+            {{ drive.participant_count }}
+          </p>
+
+          <p>
+            Status:
+            <span class="badge text-bg-primary">
+              {{ drive.status }}
+            </span>
+          </p>
+
+          <p>
+            Scheduled:
+            {{ drive.scheduled_at | date:'medium' }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+

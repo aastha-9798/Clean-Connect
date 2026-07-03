@@ -72,7 +72,7 @@ def read_me(current_user: models.User = Depends(get_current_user)): #here models
         "username": current_user.username
     }
 
-@router.get("/refresh")
+@router.post("/refresh")
 def refresh_token(
     creds: HTTPAuthorizationCredentials= Depends(security),
     db: Session= Depends(get_db)

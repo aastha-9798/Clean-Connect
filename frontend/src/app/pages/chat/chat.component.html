@@ -1,0 +1,98 @@
+<div class="container mt-4">
+
+  <div class="chat-container">
+
+    <h2 class="chat-title">🤖 AI Assistant</h2>
+
+    <div class="messages" #chatContainer>
+
+        <div
+        *ngFor="let message of messages"
+        class="message-row"
+        [class.user-row]="message.role === 'user'"
+        [class.assistant-row]="message.role === 'assistant'">
+
+        <div
+            class="message-bubble"
+            [class.user-bubble]="message.role === 'user'"
+            [class.assistant-bubble]="message.role === 'assistant'">
+
+            <img
+            *ngIf="message.image"
+            [src]="message.image"
+            class="message-image">
+
+            <p class="message-text">
+            {{ message.content }}
+            </p>
+
+        </div>
+
+        </div>
+
+    </div>
+    <div class="chat-input">
+
+        <div
+            class="image-preview"
+            *ngIf="imagePreview">
+
+            <img
+            [src]="imagePreview"
+            alt="Preview">
+
+            <button
+            type="button"
+            (click)="removeImage()">
+
+            ✕
+
+            </button>
+
+        </div>
+
+        <textarea
+
+            [(ngModel)]="message"
+            rows="3"
+            placeholder="Ask the AI assistant..."
+            (keydown.enter)="onEnter($event)" >
+
+        </textarea>
+
+        <div class="actions">
+
+            <label class="attach-button">
+
+            📎
+
+            <input
+                #fileInput
+                
+                type="file"
+
+                accept="image/*"
+
+                hidden
+
+                (change)="onImageSelected($event)">
+
+            </label>
+
+            <button
+
+            (click)="sendMessage()"
+
+            [disabled]="isLoading">
+
+            Send
+
+            </button>
+
+        </div>
+
+        </div>
+
+    </div>
+
+</div>

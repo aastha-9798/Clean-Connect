@@ -1,0 +1,15 @@
+.feed-image {
+  height: 220px;
+  object-fit: cover;
+}
+
+.card {
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+.feed-card {
+  cursor: pointer;
+}

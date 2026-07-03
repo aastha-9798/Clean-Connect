@@ -102,6 +102,8 @@ def leave_drive(
     participation = db.query(Participation).filter((Participation.drive_id==drive_id) & (Participation.user_id==curr_user.id)).first()
     if not participation:
         raise HTTPException(status_code=404 , detail="participation does not exist")
+    if drive.user_id == curr_user.id:
+        raise HTTPException(status_code=403 , detail="Drive organizer cannot leave the drive")
     db.delete(participation)
     db.commit()
     return {
@@ -129,7 +131,7 @@ def get_feed(
             
             with_drives.append({
                 "drive_id": drive.id,
-                "organized by": created_by.username,
+                "organized_by": created_by.username,
                 "description": drive.description,
                 "scheduled_at": drive.scheduled_at,
                 "participant_count": count,
@@ -146,7 +148,7 @@ def get_feed(
             without_drives.append({
                 "id": report.id,
                 "reported_by": reported_by.username,
-                "date reported": report.created_at,
+                "date_reported": report.created_at,
                 "description": report.description,
                 "latitude": report.latitude,
                 "longitude": report.longitude,

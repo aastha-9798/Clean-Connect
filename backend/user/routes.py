@@ -73,6 +73,4 @@ def get_my_drives(
             "joined_at": p.joined_at
         })
 
-    return {
-        "drives": drives_data
-    }
+    return drives_data

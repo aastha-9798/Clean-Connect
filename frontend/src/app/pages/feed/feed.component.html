@@ -1,0 +1,99 @@
+<div class="container mt-4">
+
+  <h2 class="mb-4">Active Drives</h2>
+
+  <div class="row">
+
+    <div
+      *ngFor="let drive of drives"
+      class="col-md-4 mb-4">
+
+      <div
+        class="card h-100 feed-card"
+        (click)="openDriveDialog(drive)">
+
+        <img
+          [src]="drive.image"
+          class="card-img-top feed-image"
+          alt="Drive Image">
+
+        <div class="card-body">
+
+          <h5 class="card-title">
+            {{ drive.description }}
+          </h5>
+
+          <p class="text-muted">
+            Organized by {{ drive.organized_by }}
+          </p>
+
+          <p>
+            Participants:
+            {{ drive.participant_count }}
+          </p>
+
+          <p>
+            Scheduled:
+            {{ drive.scheduled_at | date:'medium' }}
+          </p>
+
+          <p class="mb-0">
+            Related Report:
+            {{ drive.report.description }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <hr class="my-5">
+
+  <h2 class="mb-4">Open Reports</h2>
+
+  <div class="row">
+
+    <div
+      *ngFor="let report of reports"
+      class="col-md-4 mb-4">
+
+      <div class="card h-100 feed-card"
+      (click)="openReportDialog(report)">
+
+        <img
+          [src]="report.image"
+          class="card-img-top feed-image"
+          alt="Report Image">
+
+        <div class="card-body">
+
+          <h5 class="card-title">
+            {{ report.description }}
+          </h5>
+
+          <p class="text-muted">
+            Reported by {{ report.reported_by }}
+          </p>
+
+          <p>
+            <span class="badge text-bg-warning">
+              {{ report.status }}
+            </span>
+          </p>
+
+          <p>
+            {{ report.date_reported | date:'medium' }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
