@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 load_dotenv() #reads the .env file and loads the environment variables into the system, allowing us to access them using os.getenv()
 
 
-#SECRET_KEY = "super_secret_key_change_this"
 SECRET_KEY = os.getenv("SECRET_KEY") #retrieves the value of the environment variable named
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY not set in environment variables")
