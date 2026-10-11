@@ -1,5 +1,1 @@
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+/* Dialog layout styles are shared with the report dialog and live in src/styles.css */

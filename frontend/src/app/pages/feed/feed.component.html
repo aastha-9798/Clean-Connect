@@ -1,96 +1,165 @@
-<div class="container mt-4">
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <span class="hero-eyebrow">
+        <mat-icon class="icon-sm">eco</mat-icon>
+        Community Feed
+      </span>
+      <h1>Cleaner neighbourhoods, together.</h1>
+      <p>
+        Spot a waste problem? Report it with a photo and location.
+        See a report near you? Organise or join a cleanup drive.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" routerLink="/report">
+          <mat-icon class="icon-sm">add_location_alt</mat-icon>
+          Report an issue
+        </a>
+        <a class="btn btn-outline-primary btn-lg" routerLink="/ai">
+          <mat-icon class="icon-sm">smart_toy</mat-icon>
+          Ask the AI assistant
+        </a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-value">{{ drives.length }}</span>
+        <span class="stat-label">Active drives</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">{{ reports.length }}</span>
+        <span class="stat-label">Open reports</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <h2 class="mb-4">Active Drives</h2>
+<div class="page">
 
-  <div class="row">
+  <h2 class="section-title">
+    Active Drives
+    <span class="count-chip">{{ drives.length }}</span>
+  </h2>
+
+  <div class="empty-state" *ngIf="drives.length === 0">
+    <mat-icon class="icon-lg">volunteer_activism</mat-icon>
+    <h3>No drives planned yet</h3>
+    <p>Open a report below and organise the first cleanup drive.</p>
+  </div>
+
+  <div class="row g-4">
 
     <div
       *ngFor="let drive of drives"
-      class="col-md-4 mb-4">
+      class="col-sm-6 col-lg-4">
 
-      <div
-        class="card h-100 feed-card"
-        (click)="openDriveDialog(drive)">
+      <article
+        class="media-card clickable"
+        tabindex="0"
+        role="button"
+        (click)="openDriveDialog(drive)"
+        (keydown.enter)="openDriveDialog(drive)">
 
-        <img
-          [src]="drive.image"
-          class="card-img-top feed-image"
-          alt="Drive Image">
+        <div class="media-card__image">
+          <img
+            [src]="drive.image"
+            alt="Photo of the drive location">
+          <span class="status-pill status-planned">
+            <mat-icon class="icon-sm">event_available</mat-icon>
+            Planned drive
+          </span>
+        </div>
 
-        <div class="card-body">
+        <div class="media-card__body">
 
-          <h5 class="card-title">
+          <h3 class="media-card__title">
             {{ drive.description }}
-          </h5>
+          </h3>
 
-          <p class="text-muted">
-            Organized by {{ drive.organized_by }}
-          </p>
-
-          <p>
-            Participants:
-            {{ drive.participant_count }}
-          </p>
-
-          <p>
-            Scheduled:
+          <div class="meta-row">
+            <mat-icon class="icon-sm">event</mat-icon>
             {{ drive.scheduled_at | date:'medium' }}
-          </p>
+          </div>
 
-          <p class="mb-0">
-            Related Report:
-            {{ drive.report.description }}
+          <div class="meta-row">
+            <mat-icon class="icon-sm">person</mat-icon>
+            Organised by {{ drive.organized_by }}
+          </div>
+
+          <div class="meta-row">
+            <mat-icon class="icon-sm">group</mat-icon>
+            {{ drive.participant_count }} {{ drive.participant_count === 1 ? 'participant' : 'participants' }}
+          </div>
+
+          <p class="media-card__note" *ngIf="drive.report.description">
+            Report: {{ drive.report.description }}
           </p>
 
         </div>
 
-      </div>
+      </article>
 
     </div>
 
   </div>
 
-  <hr class="my-5">
+  <h2 class="section-title section-gap">
+    Open Reports
+    <span class="count-chip">{{ reports.length }}</span>
+  </h2>
 
-  <h2 class="mb-4">Open Reports</h2>
+  <div class="empty-state" *ngIf="reports.length === 0">
+    <mat-icon class="icon-lg">task_alt</mat-icon>
+    <h3>No open reports</h3>
+    <p>Every reported spot has a drive. Seen a new problem? Report it.</p>
+  </div>
 
-  <div class="row">
+  <div class="row g-4">
 
     <div
       *ngFor="let report of reports"
-      class="col-md-4 mb-4">
+      class="col-sm-6 col-lg-4">
 
-      <div class="card h-100 feed-card"
-      (click)="openReportDialog(report)">
+      <article
+        class="media-card clickable"
+        tabindex="0"
+        role="button"
+        (click)="openReportDialog(report)"
+        (keydown.enter)="openReportDialog(report)">
 
-        <img
-          [src]="report.image"
-          class="card-img-top feed-image"
-          alt="Report Image">
+        <div class="media-card__image">
+          <img
+            [src]="report.image"
+            alt="Photo of the reported waste">
+          <span class="status-pill" [ngClass]="'status-' + report.status">
+            {{ report.status }}
+          </span>
+        </div>
 
-        <div class="card-body">
+        <div class="media-card__body">
 
-          <h5 class="card-title">
-            {{ report.description }}
-          </h5>
+          <h3 class="media-card__title">
+            {{ report.description || 'No description provided' }}
+          </h3>
 
-          <p class="text-muted">
+          <div class="meta-row">
+            <mat-icon class="icon-sm">person</mat-icon>
             Reported by {{ report.reported_by }}
-          </p>
+          </div>
 
-          <p>
-            <span class="badge text-bg-warning">
-              {{ report.status }}
-            </span>
-          </p>
-
-          <p>
+          <div class="meta-row">
+            <mat-icon class="icon-sm">schedule</mat-icon>
             {{ report.date_reported | date:'medium' }}
-          </p>
+          </div>
+
+          <span class="card-link">
+            View details & organise a drive
+            <mat-icon class="icon-sm">arrow_forward</mat-icon>
+          </span>
 
         </div>
 
-      </div>
+      </article>
 
     </div>
 

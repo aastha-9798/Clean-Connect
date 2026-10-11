@@ -1,0 +1,96 @@
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(180%) blur(8px);
+  border-bottom: 1px solid var(--cc-border);
+}
+
+.nav-inner {
+  max-width: 1180px;
+  height: var(--cc-nav-height);
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--cc-green-600), var(--cc-green-900));
+}
+.brand-name {
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: var(--cc-text);
+}
+.brand-name span { color: var(--cc-green-700); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--cc-muted);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.nav-item:hover { color: var(--cc-text); background: #f0f3f1; }
+.nav-item.active { color: var(--cc-green-900); background: var(--cc-green-50); }
+
+.nav-cta { margin-left: 8px; }
+.nav-logout:hover { color: #b91c1c; background: #fef2f2; }
+
+.nav-toggle {
+  display: none;
+  border: none;
+  background: transparent;
+  color: var(--cc-text);
+  padding: 6px;
+  border-radius: 8px;
+}
+
+@media (max-width: 991.98px) {
+  .nav-toggle { display: grid; place-items: center; }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: var(--cc-nav-height);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 10px 16px 16px;
+    background: #fff;
+    border-bottom: 1px solid var(--cc-border);
+    box-shadow: var(--cc-shadow-md);
+  }
+  .nav-links.open { display: flex; }
+  .nav-item { padding: 12px; }
+  .nav-cta { margin: 8px 0 4px; }
+}

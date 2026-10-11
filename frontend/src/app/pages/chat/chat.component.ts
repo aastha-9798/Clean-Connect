@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { ChatService } from '../../core/services/chat.service';
 import { ChatMessage } from '../../core/models/chat-message.model';
@@ -7,7 +8,7 @@ import { ElementRef, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatIconModule],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css'
 })

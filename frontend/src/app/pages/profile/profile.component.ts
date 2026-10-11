@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { UserService } from '../../core/services/user.service';
 import { UserReport } from '../../core/models/user-report.model';
 import { UserDrive } from '../../core/models/user-drive.model';
@@ -6,7 +8,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, DatePipe ],
+  imports: [CommonModule, DatePipe, RouterLink, MatIconModule],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })

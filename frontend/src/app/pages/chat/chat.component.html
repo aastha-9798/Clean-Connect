@@ -1,98 +1,118 @@
-<div class="container mt-4">
+<div class="chat-page">
 
-  <div class="chat-container">
+  <div class="chat-panel cc-card">
 
-    <h2 class="chat-title">🤖 AI Assistant</h2>
+    <header class="chat-header">
+      <span class="avatar">
+        <mat-icon>eco</mat-icon>
+      </span>
+      <div>
+        <h1>CleanConnect Assistant</h1>
+        <p>Ask about sorting, recycling or disposal — or share a photo of the waste.</p>
+      </div>
+    </header>
 
     <div class="messages" #chatContainer>
 
-        <div
+      <div class="chat-empty" *ngIf="messages.length === 0">
+        <span class="avatar avatar-lg">
+          <mat-icon class="icon-lg">smart_toy</mat-icon>
+        </span>
+        <h2>How can I help?</h2>
+        <p>Try asking “Is a pizza box recyclable?” or attach a photo and ask how to dispose of it.</p>
+      </div>
+
+      <div
         *ngFor="let message of messages"
         class="message-row"
         [class.user-row]="message.role === 'user'"
         [class.assistant-row]="message.role === 'assistant'">
 
-        <div
-            class="message-bubble"
-            [class.user-bubble]="message.role === 'user'"
-            [class.assistant-bubble]="message.role === 'assistant'">
+        <span class="avatar avatar-sm" *ngIf="message.role === 'assistant'">
+          <mat-icon class="icon-sm">eco</mat-icon>
+        </span>
 
-            <img
+        <div
+          class="message-bubble"
+          [class.user-bubble]="message.role === 'user'"
+          [class.assistant-bubble]="message.role === 'assistant'">
+
+          <img
             *ngIf="message.image"
             [src]="message.image"
-            class="message-image">
+            class="message-image"
+            alt="Attached image">
 
-            <p class="message-text">
-            {{ message.content }}
-            </p>
+          <span
+            class="typing"
+            *ngIf="message.role === 'assistant' && message.content === 'Thinking...'; else messageText"
+            aria-label="Assistant is typing">
+            <span></span><span></span><span></span>
+          </span>
+
+          <ng-template #messageText>
+            <p class="message-text">{{ message.content }}</p>
+          </ng-template>
 
         </div>
 
-        </div>
+      </div>
 
     </div>
-    <div class="chat-input">
 
-        <div
-            class="image-preview"
-            *ngIf="imagePreview">
+    <footer class="composer">
 
-            <img
-            [src]="imagePreview"
-            alt="Preview">
+      <div
+        class="image-preview"
+        *ngIf="imagePreview">
 
-            <button
-            type="button"
-            (click)="removeImage()">
+        <img
+          [src]="imagePreview"
+          alt="Selected image">
 
-            ✕
+        <button
+          type="button"
+          aria-label="Remove image"
+          (click)="removeImage()">
+          <mat-icon class="icon-sm">close</mat-icon>
+        </button>
 
-            </button>
+      </div>
 
-        </div>
+      <div class="composer-bar">
+
+        <label class="icon-btn" title="Attach an image">
+          <mat-icon>add_photo_alternate</mat-icon>
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            hidden
+            (change)="onImageSelected($event)">
+        </label>
 
         <textarea
+          [(ngModel)]="message"
+          rows="1"
+          placeholder="Ask about waste management…"
+          aria-label="Message"
+          (keydown.enter)="onEnter($event)"></textarea>
 
-            [(ngModel)]="message"
-            rows="3"
-            placeholder="Ask the AI assistant..."
-            (keydown.enter)="onEnter($event)" >
+        <button
+          type="button"
+          class="send-btn"
+          aria-label="Send message"
+          (click)="sendMessage()"
+          [disabled]="isLoading">
+          <mat-icon>send</mat-icon>
+        </button>
 
-        </textarea>
+      </div>
 
-        <div class="actions">
+      <small class="composer-hint">Enter to send · Shift + Enter for a new line</small>
 
-            <label class="attach-button">
+    </footer>
 
-            📎
-
-            <input
-                #fileInput
-                
-                type="file"
-
-                accept="image/*"
-
-                hidden
-
-                (change)="onImageSelected($event)">
-
-            </label>
-
-            <button
-
-            (click)="sendMessage()"
-
-            [disabled]="isLoading">
-
-            Send
-
-            </button>
-
-        </div>
-
-        </div>
-
-    </div>
+  </div>
 
 </div>

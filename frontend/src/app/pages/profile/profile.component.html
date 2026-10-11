@@ -1,100 +1,132 @@
-<div class="container mt-4">
+<div class="page">
 
-  <h2 class="mb-4">My Reports</h2>
+  <header class="page-header profile-header">
+    <div>
+      <h1>My activity</h1>
+      <p>The issues you've reported and the cleanup drives you're part of.</p>
+    </div>
+    <a class="btn btn-primary" routerLink="/report">
+      <mat-icon class="icon-sm">add_location_alt</mat-icon>
+      Report an issue
+    </a>
+  </header>
 
-  <p>Total Reports: {{ reports.length }}</p>
+  <div class="stats">
+    <div class="stat-tile cc-card">
+      <span class="stat-icon"><mat-icon>report</mat-icon></span>
+      <div>
+        <span class="stat-value">{{ reports.length }}</span>
+        <span class="stat-label">Reports raised</span>
+      </div>
+    </div>
+    <div class="stat-tile cc-card">
+      <span class="stat-icon"><mat-icon>volunteer_activism</mat-icon></span>
+      <div>
+        <span class="stat-value">{{ drives.length }}</span>
+        <span class="stat-label">Drives joined</span>
+      </div>
+    </div>
+  </div>
 
-  <div class="row">
+  <h2 class="section-title">
+    My Reports
+    <span class="count-chip">{{ reports.length }}</span>
+  </h2>
+
+  <div class="empty-state" *ngIf="reports.length === 0">
+    <mat-icon class="icon-lg">add_a_photo</mat-icon>
+    <h3>You haven't reported anything yet</h3>
+    <p>Spotted a waste problem? <a routerLink="/report">Report it</a> in under a minute.</p>
+  </div>
+
+  <div class="row g-4">
 
     <div
       *ngFor="let report of reports"
-      class="col-md-4 mb-4">
+      class="col-sm-6 col-lg-4">
 
-      <div class="card h-100">
+      <article class="media-card">
 
-        <img
-          [src]="report.image_url"
-          class="card-img-top report-image"
-          alt="Report Image">
+        <div class="media-card__image">
+          <img
+            [src]="report.image_url"
+            alt="Photo of the reported waste">
+          <span class="status-pill" [ngClass]="'status-' + report.status">
+            {{ report.status }}
+          </span>
+        </div>
 
-        <div class="card-body">
+        <div class="media-card__body">
 
-          <h5 class="card-title">
-            Report #{{ report.id }}
-          </h5>
+          <span class="card-id">Report #{{ report.id }}</span>
 
-          <p class="card-text">
-            {{ report.description }}
-          </p>
+          <h3 class="media-card__title">
+            {{ report.description || 'No description provided' }}
+          </h3>
 
-          <p>
-            Status:
-            <span class="badge text-bg-warning">
-              {{ report.status }}
-            </span>
-          </p>
-
-          <p>
-            Created:
+          <div class="meta-row">
+            <mat-icon class="icon-sm">schedule</mat-icon>
             {{ report.created_at | date:'medium' }}
-          </p>
+          </div>
 
         </div>
 
-      </div>
+      </article>
 
     </div>
 
   </div>
-  <h2 class="mb-4 mt-5">My Drives</h2>
-  <p>Total Drives: {{ drives.length }}</p>
-  <div class="row">
+
+  <h2 class="section-title section-gap">
+    My Drives
+    <span class="count-chip">{{ drives.length }}</span>
+  </h2>
+
+  <div class="empty-state" *ngIf="drives.length === 0">
+    <mat-icon class="icon-lg">groups</mat-icon>
+    <h3>You're not part of any drives yet</h3>
+    <p>Browse the <a routerLink="/">community feed</a> to join or organise one.</p>
+  </div>
+
+  <div class="row g-4">
 
     <div
       *ngFor="let drive of drives"
-      class="col-md-4 mb-4">
+      class="col-sm-6 col-lg-4">
 
-      <div class="card h-100">
+      <article class="media-card">
 
-        <img
-          [src]="drive.image"
-          class="card-img-top report-image"
-          alt="Drive Image">
+        <div class="media-card__image">
+          <img
+            [src]="drive.image"
+            alt="Photo of the drive location">
+          <span class="status-pill" [ngClass]="'status-' + drive.status">
+            {{ drive.status }}
+          </span>
+        </div>
 
-        <div class="card-body">
+        <div class="media-card__body">
 
-          <h5 class="card-title">
-            Drive #{{ drive.drive_id }}
-          </h5>
-
-          <p class="card-text">
+          <h3 class="media-card__title">
             {{ drive.description }}
-          </p>
+          </h3>
 
-          <p>
-            Participants:
-            {{ drive.participant_count }}
-          </p>
-
-          <p>
-            Status:
-            <span class="badge text-bg-primary">
-              {{ drive.status }}
-            </span>
-          </p>
-
-          <p>
-            Scheduled:
+          <div class="meta-row">
+            <mat-icon class="icon-sm">event</mat-icon>
             {{ drive.scheduled_at | date:'medium' }}
-          </p>
+          </div>
+
+          <div class="meta-row">
+            <mat-icon class="icon-sm">group</mat-icon>
+            {{ drive.participant_count }} {{ drive.participant_count === 1 ? 'participant' : 'participants' }}
+          </div>
 
         </div>
 
-      </div>
+      </article>
 
     </div>
 
   </div>
 
 </div>
-

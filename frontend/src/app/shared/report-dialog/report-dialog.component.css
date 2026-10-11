@@ -1,8 +1,34 @@
-.dialog-header {
+/* Shared dialog layout styles live in src/styles.css */
+
+.drive-cta {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  border-radius: var(--cc-radius);
+  background: var(--cc-green-50);
+  border: 1px solid #c9ecd5;
 }
-.dialog-header button:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+.drive-cta p { margin: 2px 0 0; font-size: 0.88rem; color: var(--cc-muted); }
+
+.drive-form {
+  padding: 18px;
+  margin-bottom: 18px;
+  border-radius: var(--cc-radius);
+  border: 1px solid var(--cc-border);
+  background: #fafcfb;
+}
+.drive-form__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  margin-bottom: 14px;
+  color: var(--cc-green-900);
+}
+
+@media (max-width: 575.98px) {
+  .drive-cta { flex-direction: column; align-items: stretch; }
 }

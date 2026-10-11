@@ -1,15 +1,31 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container">
+<nav class="app-nav">
+  <div class="nav-inner">
 
-    <a class="navbar-brand" routerLink="/">
-      Clean Connect
+    <a class="brand" routerLink="/" (click)="menuOpen = false">
+      <span class="brand-mark">
+        <mat-icon>eco</mat-icon>
+      </span>
+      <span class="brand-name">Clean<span>Connect</span></span>
     </a>
 
-    <div class="navbar-nav">
+    <button
+      type="button"
+      class="nav-toggle"
+      aria-label="Toggle navigation"
+      [attr.aria-expanded]="menuOpen"
+      (click)="menuOpen = !menuOpen">
+      <mat-icon>{{ menuOpen ? 'close' : 'menu' }}</mat-icon>
+    </button>
+
+    <div class="nav-links" [class.open]="menuOpen">
 
       <a
-        class="nav-link"
-        routerLink="/">
+        class="nav-item"
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        (click)="menuOpen = false">
+        <mat-icon class="icon-sm">dynamic_feed</mat-icon>
         Feed
       </a>
 
@@ -17,15 +33,18 @@
       <ng-container *ngIf="!authService.isLoggedIn()">
 
         <a
-          class="nav-link"
-          routerLink="/login">
-          Login
+          class="nav-item"
+          routerLink="/login"
+          routerLinkActive="active"
+          (click)="menuOpen = false">
+          Log in
         </a>
 
         <a
-          class="nav-link"
-          routerLink="/signup">
-          Signup
+          class="btn btn-primary btn-sm nav-cta"
+          routerLink="/signup"
+          (click)="menuOpen = false">
+          Sign up
         </a>
 
       </ng-container>
@@ -33,28 +52,37 @@
       <ng-container *ngIf="authService.isLoggedIn()">
 
         <a
-          class="nav-link"
-          routerLink="/report">
-          Report Issue
-        </a>
-
-        <a
-          class="nav-link"
-          routerLink="/ai">
+          class="nav-item"
+          routerLink="/ai"
+          routerLinkActive="active"
+          (click)="menuOpen = false">
+          <mat-icon class="icon-sm">smart_toy</mat-icon>
           AI Assistant
         </a>
 
         <a
-          class="nav-link"
-          routerLink="/profile">
+          class="nav-item"
+          routerLink="/profile"
+          routerLinkActive="active"
+          (click)="menuOpen = false">
+          <mat-icon class="icon-sm">person</mat-icon>
           Profile
         </a>
 
         <a
-          class="nav-link"
+          class="btn btn-primary btn-sm nav-cta"
+          routerLink="/report"
+          (click)="menuOpen = false">
+          <mat-icon class="icon-sm">add_location_alt</mat-icon>
+          Report Issue
+        </a>
+
+        <a
+          class="nav-item nav-logout"
           href="#"
-          (click)="logout()">
-          Logout
+          (click)="menuOpen = false; logout()">
+          <mat-icon class="icon-sm">logout</mat-icon>
+          Log out
         </a>
 
       </ng-container>

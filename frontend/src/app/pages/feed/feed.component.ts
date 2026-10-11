@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FeedService } from '../../core/services/feed.service';
 import { FeedReport } from '../../core/models/feed-report.model';
@@ -10,7 +12,7 @@ import { ReportDialogComponent } from '../../shared/report-dialog/report-dialog.
 
 @Component({
   selector: 'app-feed',
-  imports: [CommonModule, DatePipe, MatDialogModule],
+  imports: [CommonModule, DatePipe, MatDialogModule, RouterLink, MatIconModule],
   templateUrl: './feed.component.html',
   styleUrl: './feed.component.css'
 })

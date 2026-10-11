@@ -1,114 +1,128 @@
-<div class="container mt-4">
+<div class="page page-narrow">
 
-  <div class="card">
+  <header class="page-header">
+    <h1>Report an issue</h1>
+    <p>Share a photo and the exact location of the waste problem so your community can act on it.</p>
+  </header>
 
-    <div class="card-body">
+  <div class="cc-card report-card">
 
-      <h2 class="mb-4">Report an Issue</h2>
+    <div
+      *ngIf="errorMessage"
+      class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
 
-      <div
-        *ngIf="errorMessage"
-        class="alert alert-danger">
+    <div
+      *ngIf="successMessage"
+      class="alert alert-success">
+      {{ successMessage }}
+    </div>
 
-        {{ errorMessage }}
+    <form [formGroup]="reportForm" (ngSubmit)="onSubmit()">
 
-      </div>
+      <section class="form-section">
 
-      <div
-        *ngIf="successMessage"
-        class="alert alert-success">
+        <h2 class="form-section__title">
+          <span class="step">1</span>
+          Add a photo
+        </h2>
 
-        {{ successMessage }}
-
-      </div>
-
-      <form [formGroup]="reportForm" (ngSubmit)="onSubmit()">
-
-        <div class="mb-3">  
-
-          <label class="form-label">
-            Upload Image
-          </label>
+        <label class="upload-zone" [class.has-image]="imagePreview">
 
           <input
             type="file"
-            class="form-control"
+            class="visually-hidden"
             accept="image/*"
             (change)="onFileSelected($event)">
 
-        </div>
+          <ng-container *ngIf="!imagePreview">
+            <span class="upload-icon">
+              <mat-icon>add_a_photo</mat-icon>
+            </span>
+            <strong>Click to upload a photo</strong>
+            <span class="upload-hint">JPEG, PNG or WEBP · up to 5 MB</span>
+          </ng-container>
 
-        <div *ngIf="imagePreview" class="mb-3">
+          <ng-container *ngIf="imagePreview">
+            <img
+              [src]="imagePreview"
+              alt="Preview of the selected photo">
+            <span class="upload-change">
+              <mat-icon class="icon-sm">swap_horiz</mat-icon>
+              Change photo
+            </span>
+          </ng-container>
 
-          <img
-            [src]="imagePreview"
-            class="img-fluid rounded preview-image"
-            alt="Preview">
+        </label>
 
-        </div>
-        <div class="mb-3">
+      </section>
 
-          <button
-            type="button"
-            class="btn btn-outline-primary"
-            (click)="getLocation()">
+      <section class="form-section">
 
-            Use Current Location
+        <h2 class="form-section__title">
+          <span class="step">2</span>
+          Location
+        </h2>
 
-          </button>
-          <br><br>
-          <div class="mb-3">
-
-            <label class="form-label">
-              Latitude
-            </label>
-
-            <input
-              class="form-control"
-              formControlName="latitude"
-              readonly>
-
-          </div>
-
-          <div class="mb-3">
-
-            <label class="form-label">
-              Longitude
-            </label>
-
-            <input
-              class="form-control"
-              formControlName="longitude"
-              readonly>
-
-          </div>
-
-        </div>
-
-        <div class="mb-3">
-
-          <label class="form-label">
-            Description
-          </label>
-
-          <textarea
-            rows="4"
-            class="form-control"
-            formControlName="description">
-          </textarea>
-
-        </div>
         <button
-          type="submit"
-          class="btn btn-success">
-
-          Submit Report
-
+          type="button"
+          class="btn btn-outline-primary mb-3"
+          (click)="getLocation()">
+          <mat-icon class="icon-sm">my_location</mat-icon>
+          Use current location
         </button>
 
-      </form>
+        <div class="row g-3">
 
-    </div>
+          <div class="col-6">
+            <label class="form-label" for="report-latitude">Latitude</label>
+            <input
+              id="report-latitude"
+              class="form-control"
+              placeholder="—"
+              formControlName="latitude"
+              readonly>
+          </div>
+
+          <div class="col-6">
+            <label class="form-label" for="report-longitude">Longitude</label>
+            <input
+              id="report-longitude"
+              class="form-control"
+              placeholder="—"
+              formControlName="longitude"
+              readonly>
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="form-section">
+
+        <h2 class="form-section__title">
+          <span class="step">3</span>
+          Describe the problem
+        </h2>
+
+        <textarea
+          rows="4"
+          class="form-control"
+          placeholder="e.g. Overflowing garbage near the bus stop on MG Road"
+          formControlName="description">
+        </textarea>
+
+      </section>
+
+      <button
+        type="submit"
+        class="btn btn-primary btn-lg w-100">
+        <mat-icon class="icon-sm">send</mat-icon>
+        Submit report
+      </button>
+
+    </form>
 
   </div>
 

@@ -1,11 +1,12 @@
 import { Component , OnInit} from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import {  ReactiveFormsModule,  FormGroup,  FormControl} from '@angular/forms';
 import { ReportService } from '../../core/services/report.service';
 
 @Component({
   selector: 'app-report',
-  imports: [ CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule],
   templateUrl: './report.component.html',
   styleUrl: './report.component.css'
 })

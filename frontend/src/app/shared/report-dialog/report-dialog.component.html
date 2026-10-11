@@ -1,105 +1,145 @@
-<div mat-dialog-title class="dialog-header">
-
-  <h2 class="mb-0">
-    Report Details
-  </h2>
+<div class="dialog-shell">
 
   <button
-    mat-icon-button
+    type="button"
+    class="dialog-close"
     aria-label="Close dialog"
     (click)="closeDialog()">
-
     <mat-icon>close</mat-icon>
-
   </button>
 
-</div>
-<div mat-dialog-content>
+  <div mat-dialog-content>
 
-  <img
-    [src]="report.image"
-    class="img-fluid rounded mb-3"
-    alt="Report Image">
-
-  <p>
-    {{ report.description }}
-  </p>
-
-  <p>
-    Reported by: {{ report.reported_by }}
-  </p>
-
-  <p>
-    Status: {{ report.status }}
-  </p>
-
-    <div
-    *ngIf="successMessage"
-    class="alert alert-success">
-
-    {{ successMessage }}
-
+    <div class="dialog-hero">
+      <img
+        [src]="report.image"
+        alt="Photo of the reported waste">
+      <span class="status-pill" [ngClass]="'status-' + report.status">
+        {{ report.status }}
+      </span>
     </div>
 
-    <div
-    *ngIf="errorMessage"
-    class="alert alert-danger">
+    <div class="dialog-body">
 
-    {{ errorMessage }}
+      <h2 class="dialog-title">
+        {{ report.description || 'No description provided' }}
+      </h2>
 
-    </div>
+      <div class="detail-list">
 
-    <button
-        *ngIf="!showDriveForm"
-        class="btn btn-success w-100"
-        (click)="openDriveForm()">
-        Create Drive
-    </button>
+        <div class="detail">
+          <mat-icon class="icon-sm">person</mat-icon>
+          <div>
+            <span class="detail-label">Reported by</span>
+            <span class="detail-value">{{ report.reported_by }}</span>
+          </div>
+        </div>
 
-    <div *ngIf="showDriveForm">
-        <hr>
-        <h5>Create Cleanup Drive</h5>
+        <div class="detail">
+          <mat-icon class="icon-sm">schedule</mat-icon>
+          <div>
+            <span class="detail-label">Reported on</span>
+            <span class="detail-value">{{ report.date_reported | date:'medium' }}</span>
+          </div>
+        </div>
+
+        <div class="detail">
+          <mat-icon class="icon-sm">flag</mat-icon>
+          <div>
+            <span class="detail-label">Status</span>
+            <span class="detail-value text-capitalize">{{ report.status }}</span>
+          </div>
+        </div>
+
+        <div class="detail">
+          <mat-icon class="icon-sm">place</mat-icon>
+          <div>
+            <span class="detail-label">Location</span>
+            <span class="detail-value">{{ report.latitude | number:'1.4-4' }}, {{ report.longitude | number:'1.4-4' }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div
+        *ngIf="successMessage"
+        class="alert alert-success">
+        {{ successMessage }}
+      </div>
+
+      <div
+        *ngIf="errorMessage"
+        class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <div class="drive-cta" *ngIf="!showDriveForm">
+        <div>
+          <strong>Help clean this up</strong>
+          <p>Organise a cleanup drive so neighbours can join you.</p>
+        </div>
+        <button
+          class="btn btn-primary"
+          (click)="openDriveForm()">
+          <mat-icon class="icon-sm">volunteer_activism</mat-icon>
+          Create drive
+        </button>
+      </div>
+
+      <div class="drive-form" *ngIf="showDriveForm">
+
+        <h3 class="drive-form__title">
+          <mat-icon class="icon-sm">volunteer_activism</mat-icon>
+          Create a cleanup drive
+        </h3>
+
         <form
-            [formGroup]="driveForm"
-            (ngSubmit)="onCreateDrive()">
+          [formGroup]="driveForm"
+          (ngSubmit)="onCreateDrive()">
 
-            <div class="mb-3">
-
-                <label class="form-label">
-                Drive Description
-                </label>
-
-                <textarea
-                rows="3"
-                class="form-control"
-                formControlName="description">
-                </textarea>
-
+          <div class="mb-3">
+            <label class="form-label" for="drive-description">
+              What's the plan?
+            </label>
+            <textarea
+              id="drive-description"
+              rows="3"
+              class="form-control"
+              placeholder="e.g. Bring gloves and bags, we'll meet at the park gate"
+              formControlName="description">
+            </textarea>
+            <div class="invalid-feedback">
+              Please describe the drive.
             </div>
+          </div>
 
-            <div class="mb-3">
-
-                <label class="form-label">
-                Scheduled At
-                </label>
-
-                <input
-                type="datetime-local"
-                class="form-control"
-                formControlName="scheduled_at">
-
+          <div class="mb-3">
+            <label class="form-label" for="drive-scheduled-at">
+              Date & time (IST)
+            </label>
+            <input
+              id="drive-scheduled-at"
+              type="datetime-local"
+              class="form-control"
+              formControlName="scheduled_at">
+            <div class="invalid-feedback">
+              Please choose a date and time.
             </div>
+          </div>
 
-            <button
+          <button
             type="submit"
-            class="btn btn-success"
+            class="btn btn-primary w-100"
             [disabled]="successMessage">
-
-            Create Drive
-
-            </button>
+            Create drive
+          </button>
 
         </form>
 
+      </div>
+
     </div>
+
+  </div>
+
 </div>

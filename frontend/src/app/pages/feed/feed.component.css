@@ -1,15 +1,91 @@
-.feed-image {
-  height: 220px;
-  object-fit: cover;
+.hero {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(22, 163, 74, 0.14), transparent 45%),
+    linear-gradient(180deg, var(--cc-green-50), var(--cc-bg));
+  border-bottom: 1px solid var(--cc-border);
 }
 
-.card {
-  transition: transform 0.2s ease;
+.hero-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 48px 20px 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
 }
 
-.card:hover {
-  transform: translateY(-4px);
+.hero-text { max-width: 620px; }
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cc-green-900);
+  background: var(--cc-green-100);
+  margin-bottom: 14px;
 }
-.feed-card {
-  cursor: pointer;
+
+.hero h1 {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+.hero p {
+  font-size: 1.05rem;
+  color: var(--cc-muted);
+  margin-bottom: 24px;
+}
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.hero-stats { display: flex; gap: 14px; }
+
+.stat {
+  min-width: 140px;
+  padding: 20px 22px;
+  border-radius: var(--cc-radius);
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+  box-shadow: var(--cc-shadow-sm);
+}
+.stat-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--cc-green-700);
+}
+.stat-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--cc-muted);
+}
+
+.card-link {
+  margin-top: auto;
+  padding-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--cc-green-700);
+}
+
+@media (max-width: 991.98px) {
+  .hero-inner { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 575.98px) {
+  .hero-inner { padding: 32px 16px; }
+  .hero-actions .btn { width: 100%; }
+  .hero-stats { width: 100%; }
+  .stat { flex: 1; min-width: 0; }
 }
