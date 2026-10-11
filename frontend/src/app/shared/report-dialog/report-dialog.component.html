@@ -10,14 +10,13 @@
 
   <div mat-dialog-content>
 
-    <div class="dialog-hero">
-      <img
-        [src]="report.image"
-        alt="Photo of the reported waste">
+    <app-image-gallery
+      [images]="report.images"
+      alt="Photo of the reported waste">
       <span class="status-pill" [ngClass]="'status-' + report.status">
         {{ report.status }}
       </span>
-    </div>
+    </app-image-gallery>
 
     <div class="dialog-body">
 
@@ -140,6 +139,16 @@
 
     </div>
 
+  </div>
+
+  <div class="dialog-footer dialog-footer-start" *ngIf="isOwner">
+    <button
+      type="button"
+      class="btn btn-outline-danger btn-sm"
+      (click)="deleteReport()">
+      <mat-icon class="icon-sm">delete_outline</mat-icon>
+      Delete report
+    </button>
   </div>
 
 </div>

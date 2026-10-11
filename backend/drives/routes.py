@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException , Request
 from backend.database import get_db #actual session provider
-from sqlalchemy.orm import Session #session type hint
+from sqlalchemy.orm import Session, selectinload #session type hint
 from datetime import datetime , timezone
 
 from backend.authentication.dependencies import get_current_user
@@ -8,6 +8,7 @@ from backend.reports.models import Report
 from backend.drives.models import Drive , Participation
 from backend.drives.schemas import CreateDriveRequest
 from backend.authentication.models import User
+from backend.images import report_image_urls
 
 router = APIRouter()
 
@@ -110,12 +111,33 @@ def leave_drive(
         "message": "participation removed successfully"
     }
 
+@router.delete("/{drive_id}")
+def delete_drive(
+    drive_id: str,
+    db: Session = Depends(get_db),
+    curr_user = Depends(get_current_user)
+):
+    drive = db.query(Drive).filter(Drive.id == drive_id).first()
+    if not drive:
+        raise HTTPException(status_code=404, detail="drive does not exist")
+    if drive.user_id != curr_user.id:
+        raise HTTPException(status_code=403, detail="Only the organizer can delete this drive")
+    if drive.status != "planned":
+        raise HTTPException(status_code=409, detail="Only planned drives can be deleted")
+
+    db.delete(drive) # its participations are deleted with it; the report shows as open again in the feed
+    db.commit()
+    print("Drive deleted:", drive_id, "by user:", curr_user.username)
+    return {
+        "message": "Drive deleted successfully"
+    }
+
 @router.get("/feed")
 def get_feed(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    reports = db.query(Report).all()
+    reports = db.query(Report).options(selectinload(Report.images)).all() # load every report's photos in one extra query
 
     with_drives = []
     without_drives = []
@@ -123,7 +145,7 @@ def get_feed(
     for report in reports:
         drive = db.query(Drive).filter((Drive.report_id == report.id) &(Drive.status == "planned")).first()
         reported_by= db.query(User).filter(User.id == report.user_id).first()
-        image_url =  str(request.base_url) + report.image_path.replace("\\", "/")
+        images = report_image_urls(request, report)
         
         if drive:
             count = db.query(Participation).filter(Participation.drive_id == drive.id).count()
@@ -132,12 +154,14 @@ def get_feed(
             with_drives.append({
                 "drive_id": drive.id,
                 "organized_by": created_by.username,
+                "organizer_id": drive.user_id, # lets the frontend show "Delete" to the organizer only
                 "description": drive.description,
                 "scheduled_at": drive.scheduled_at,
                 "participant_count": count,
                 "latitude": report.latitude,
                 "longitude": report.longitude,
-                "image": image_url,
+                "image": images[0] if images else None, # cover photo
+                "images": images,
                 "report": {
                     "id": report.id,
                     "description": report.description
@@ -148,12 +172,14 @@ def get_feed(
             without_drives.append({
                 "id": report.id,
                 "reported_by": reported_by.username,
+                "reported_by_id": report.user_id, # lets the frontend show "Delete" to the reporter only
                 "date_reported": report.created_at,
                 "description": report.description,
                 "latitude": report.latitude,
                 "longitude": report.longitude,
                 "status": report.status,
-                "image": image_url
+                "image": images[0] if images else None, # cover photo
+                "images": images
             })
 
     return {

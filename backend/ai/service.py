@@ -1,9 +1,10 @@
-﻿from google import genai
+from google import genai
+from google.genai import types, errors
 import os
 from dotenv import load_dotenv
-from PIL import Image
-from pathlib import Path
+from collections.abc import Iterator
 from backend.ai.models import Conversation, Message
+from backend.database import SessionLocal
 from sqlalchemy import literal_column
 
 # Load environment variables
@@ -12,8 +13,57 @@ load_dotenv()
 # Create client
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
-conversation = []
+# Tried in order: if a model is busy (503), rate-limited (429) or unavailable, the next one answers instead.
+# Each model has its own free-tier quota, so falling back makes "busy" errors much rarer.
+# gemini-3.5-flash is first because it was the fastest reliable one in testing (first words in ~1.5-2.5s).
+MODELS = ["gemini-3.5-flash", "gemini-3.6-flash", "gemini-flash-latest"]
+FALLBACK_ERROR_CODES = (404, 429, 500, 503)
+HISTORY_LIMIT = 6  # how many earlier messages are sent to the model as context
 
+# Sent once per request as the model's standing instructions, separate from the conversation itself
+SYSTEM_INSTRUCTION = """You are a friendly waste management assistant.
+
+Your job:
+- Help users understand and manage waste
+- Answer questions clearly and simply
+
+Rules:
+- Use simple, everyday language
+- Be friendly and helpful
+- Avoid technical terms
+- If user provides image , respond in its context
+
+Response length rules:
+- If the user asks a simple question → keep answer short (2–3 sentences)
+- If the user asks for instructions (e.g., "how to", "steps", "what should I do") → give a slightly longer answer (4–6 lines max), in bulleted points / steps
+- Do NOT give very long or complex explanations"""
+
+# Simple waste questions don't need the model to "think" first, and thinking adds seconds before the reply starts,
+# so the lowest level is used. Not every model accepts "minimal"; those that reject it are switched to "low" here.
+_thinking_level_for_model: dict[str, types.ThinkingLevel] = {}
+
+def _generation_config(model: str) -> types.GenerateContentConfig:
+    if model.startswith("gemini-2"):
+        thinking = types.ThinkingConfig(thinking_budget=0)  # Gemini 2.x turns thinking off with a budget of 0
+    else:
+        level = _thinking_level_for_model.get(model, types.ThinkingLevel.MINIMAL)
+        thinking = types.ThinkingConfig(thinking_level=level)
+    return types.GenerateContentConfig(
+        system_instruction=SYSTEM_INSTRUCTION,
+        thinking_config=thinking,
+    )
+
+def _is_unsupported_thinking_level(error: errors.APIError, model: str) -> bool:
+    return (
+        error.code == 400
+        and "thinking level" in (error.message or "").lower()
+        and _thinking_level_for_model.get(model) != types.ThinkingLevel.LOW
+    )
+
+IMAGE_MIME_TYPES = {".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
+
+class ChatError(Exception):
+    """The reply couldn't be generated; the message is safe to show to the user."""
 
 
 def get_or_create_conversation(db, user_id):
@@ -37,7 +87,7 @@ def save_message(db, conversation_id, role, content, image_path=None):
     db.add(message)
     db.commit()
 
-def get_last_messages(db, conversation_id, limit=6):
+def get_last_messages(db, conversation_id, limit=HISTORY_LIMIT):
     messages = (
         db.query(Message)
         .filter_by(conversation_id=conversation_id)
@@ -48,81 +98,87 @@ def get_last_messages(db, conversation_id, limit=6):
 
     return list(reversed(messages))  # important: oldest → newest
 
-def build_context(messages):
-    conversation = []
+def build_contents(history, user_message, image_path=None) -> list[types.Content]:
+    """Turns the conversation into the role-tagged messages Gemini expects.
 
-    for msg in messages:
-        if msg.role == "user":
-            if msg.image_path:
-                conversation.append(f"User: {msg.content}")
-            else:
-                conversation.append(f"User: {msg.content}")
-        else:
-            conversation.append(f"Assistant: {msg.content}")
+    Earlier messages are sent as text only; the image (if any) is attached to the new message.
+    """
+    contents = []
+    for msg in history:
+        role = "user" if msg.role == "user" else "model"
+        if not contents and role == "model":
+            continue  # the conversation sent to the model must start with a user message
+        contents.append(types.Content(role=role, parts=[types.Part.from_text(text=msg.content)]))
 
-    return "\n".join(conversation)
-
-
-def handle_user_input(db, user_id, user_message, image_path=None):
-    conversation = get_or_create_conversation(db,user_id)
-    messages= get_last_messages(db, conversation.id, 6)
-    context= build_context(messages)
-    current_input = f"User: {user_message}"
-    context = context + "\n" + current_input
-    
-    prompt = f"""
-        You are a friendly waste management assistant.
-
-        Your job:
-        - Help users understand and manage waste
-        - Answer questions clearly and simply
-
-        Rules:
-        - Use simple, everyday language
-        - Be friendly and helpful
-        - Avoid technical terms
-        - If user provides image , respond in its context 
-
-        Response length rules:
-        - If the user asks a simple question → keep answer short (2–3 sentences)
-        - If the user asks for instructions (e.g., "how to", "steps", "what should I do") → give a slightly longer answer (4–6 lines max), in bulleted points / steps
-        - Do NOT give very long or complex explanations
-
-        Conversation:
-        {context}
-
-        Assistant:
-        """
-
+    parts = [types.Part.from_text(text=user_message)]
     if image_path:
-        
-        image = Image.open(image_path)
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=[prompt, image]
-        )
+        with open(image_path, "rb") as f:
+            mime_type = IMAGE_MIME_TYPES.get(os.path.splitext(image_path)[1].lower(), "image/jpeg")
+            parts.append(types.Part.from_bytes(data=f.read(), mime_type=mime_type))
+    contents.append(types.Content(role="user", parts=parts))
+    return contents
 
-    else:
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=prompt
-        )
+def _stream_from_models(contents) -> Iterator[str]:
+    """Streams the reply from the first model in MODELS that can answer.
 
-    bot_reply = response.text
+    Falls back to the next model when one is busy, rate-limited or unavailable,
+    and retries a model with a higher thinking level if it rejects "minimal".
+    Raises ChatError with a user-friendly message if no model can answer.
+    """
+    last_error = None
+    for model in MODELS:
+        while True:
+            received_text = False
+            try:
+                for chunk in client.models.generate_content_stream(
+                    model=model,
+                    contents=contents,
+                    config=_generation_config(model)
+                ):
+                    if chunk.text:
+                        received_text = True
+                        yield chunk.text
+                return
+            except errors.APIError as error:
+                print(f"Gemini error ({model}):", error.code, error.message)
+                if received_text:
+                    # part of the answer is already on the user's screen, so another model can't take over now
+                    raise ChatError("The reply was interrupted. Please try again.")
+                if _is_unsupported_thinking_level(error, model):
+                    _thinking_level_for_model[model] = types.ThinkingLevel.LOW
+                    continue  # same model again with the "low" level
+                if error.code not in FALLBACK_ERROR_CODES:
+                    raise ChatError("Sorry, the assistant couldn't answer that. Please try again.")
+                last_error = error
+                break  # try the next model
 
-    save_message(
-        db,
-        conversation.id,
-        "user",
-        user_message,
-        str(image_path) if image_path else None
-    )
+    if last_error is not None and last_error.code == 429:
+        raise ChatError("The assistant has reached its usage limit for now. Please try again in a few minutes.")
+    raise ChatError("The assistant is busy right now. Please try again in a moment.")
 
-    save_message(
-        db,
-        conversation.id,
-        "assistant",
-        bot_reply
-    )
+def stream_reply(user_id, user_message, image_path=None) -> Iterator[str]:
+    """Yields the assistant's reply piece by piece as Gemini writes it.
 
-    return bot_reply
+    Both messages are saved only once the whole reply has arrived. Uses its own
+    database session because it keeps running after the route function has returned.
+    Raises ChatError with a user-friendly message if Gemini fails.
+    """
+    db = SessionLocal()
+    try:
+        conversation = get_or_create_conversation(db, user_id)
+        history = get_last_messages(db, conversation.id)
+        contents = build_contents(history, user_message, image_path)
+
+        reply_parts = []
+        for text in _stream_from_models(contents):
+            reply_parts.append(text)
+            yield text
+
+        bot_reply = "".join(reply_parts)
+        if not bot_reply:
+            raise ChatError("Sorry, the assistant couldn't answer that. Please try again.")
+
+        save_message(db, conversation.id, "user", user_message, str(image_path) if image_path else None)
+        save_message(db, conversation.id, "assistant", bot_reply)
+    finally:
+        db.close()

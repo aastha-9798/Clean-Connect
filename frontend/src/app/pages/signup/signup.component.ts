@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators} from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators, FormGroupDirective} from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 
@@ -15,7 +15,10 @@ export class SignupComponent {
   constructor(private authService: AuthService) {}
   successMessage = '';
   errorMessage = '';
-  
+
+  // the <form [formGroup]> directive; resetting through it also clears its "submitted" state
+  @ViewChild(FormGroupDirective) formDirective!: FormGroupDirective;
+
   signupForm = new FormGroup({
     username: new FormControl('', [
       Validators.required
@@ -41,7 +44,9 @@ export class SignupComponent {
         next: (response: any) => {
           this.successMessage = response.message;
           this.errorMessage = '';
-          this.signupForm.reset();
+          // signupForm.reset() alone would leave the form marked as submitted,
+          // so the now-empty fields would show "required" errors under the success message
+          this.formDirective.resetForm();
         },
 
         error: (error) => {

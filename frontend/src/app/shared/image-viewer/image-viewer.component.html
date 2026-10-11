@@ -1,0 +1,39 @@
+<div class="viewer" (click)="close()">
+
+  <button
+    type="button"
+    class="viewer-btn viewer-close"
+    aria-label="Close full-size photo"
+    (click)="close()">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <img
+    class="viewer-image"
+    [src]="data.images[current]"
+    [alt]="data.alt + ' ' + (current + 1) + ' of ' + data.images.length"
+    (click)="$event.stopPropagation()">
+
+  <ng-container *ngIf="data.images.length > 1">
+
+    <button
+      type="button"
+      class="viewer-btn viewer-prev"
+      aria-label="Previous photo"
+      (click)="previous(); $event.stopPropagation()">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+
+    <button
+      type="button"
+      class="viewer-btn viewer-next"
+      aria-label="Next photo"
+      (click)="next(); $event.stopPropagation()">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <span class="viewer-counter">{{ current + 1 }} / {{ data.images.length }}</span>
+
+  </ng-container>
+
+</div>

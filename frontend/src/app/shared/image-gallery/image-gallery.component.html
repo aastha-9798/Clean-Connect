@@ -1,0 +1,55 @@
+<div class="gallery-main">
+
+  <button
+    type="button"
+    class="gallery-open"
+    aria-label="View full-size photo"
+    (click)="openViewer()">
+    <img
+      [src]="images[current]"
+      [alt]="alt + ' ' + (current + 1) + ' of ' + images.length">
+    <span class="gallery-expand" aria-hidden="true">
+      <mat-icon class="icon-sm">open_in_full</mat-icon>
+    </span>
+  </button>
+
+  <ng-content></ng-content>
+
+  <ng-container *ngIf="images.length > 1">
+
+    <button
+      type="button"
+      class="gallery-nav gallery-prev"
+      aria-label="Previous photo"
+      (click)="previous()">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+
+    <button
+      type="button"
+      class="gallery-nav gallery-next"
+      aria-label="Next photo"
+      (click)="next()">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <span class="gallery-counter">{{ current + 1 }} / {{ images.length }}</span>
+
+  </ng-container>
+
+</div>
+
+<div class="gallery-thumbs" *ngIf="images.length > 1">
+
+  <button
+    *ngFor="let src of images; let i = index"
+    type="button"
+    class="thumb"
+    [class.active]="i === current"
+    [attr.aria-label]="'Show photo ' + (i + 1)"
+    [attr.aria-current]="i === current"
+    (click)="show(i)">
+    <img [src]="src" alt="">
+  </button>
+
+</div>

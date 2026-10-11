@@ -39,6 +39,21 @@ export class AuthService {
     return localStorage.getItem('access_token');
   }
 
+  // id of the logged-in user, read from the access token (its "sub" claim);
+  // only used to decide which buttons to show - the backend still checks every request
+  getCurrentUserId(): string | null {
+    const token = this.getAccessToken();
+    if (!token) {
+      return null;
+    }
+    try {
+      const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(payload)).sub ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   getRefreshToken(): string | null {
     return localStorage.getItem('refresh_token');
   }

@@ -8,11 +8,12 @@ Improper waste disposal is one of the most pressing environmental and public hea
 CleanConnect is a web application with a client–server architecture: an Angular single-page frontend talks to a FastAPI REST backend.
 
 - **Authentication** – Users sign up and log in with email and password. Passwords are hashed with Argon2. On login the API returns a short-lived JWT access token (15 minutes) and a refresh token (7 days); the frontend refreshes the access token automatically when it expires.
-- **Report an Issue** – Users upload a photo of a waste problem along with its exact geolocation (captured from the browser) and a description.
+- **Report an Issue** – Users upload 1 to 5 photos of a waste problem (up to 5 MB each) along with its exact geolocation (captured from the browser) and a description. The first photo is the cover shown on cards; the rest appear in a gallery in the report details.
 - **Community Feed** – The home page shows active cleanup drives and open reports that don't have a drive yet.
 - **Cleanup Drives** – Any user can organise a drive for an open report by setting a date and description. Other users can join or leave the drive; the organiser is always a participant.
+- **Deleting** – Reporters can delete their own reports (only while no drive is attached), and organisers can delete their own drives while they are still planned; the report then shows as open again.
 - **Profile** – Users can see the reports they've raised and the drives they're part of.
-- **AI Assistant** – A chatbot powered by Google Gemini answers waste-management questions and can respond to an uploaded image. Each user's chat history is saved.
+- **AI Assistant** – A chatbot powered by Google Gemini answers waste-management questions and can respond to an uploaded image. Replies stream in as they are written, and each user's chat history is saved.
 
 ## Tech Stack
 - **Frontend:** Angular 19 (standalone components), TypeScript, Angular Material, Bootstrap 5
@@ -45,14 +46,16 @@ frontend/
 | POST | `/auth/login` | – | Get access and refresh tokens |
 | POST | `/auth/refresh` | Refresh token | Get a new access token |
 | GET | `/auth/me` | ✔ | Current user's details |
-| POST | `/reports/upload` | ✔ | Upload a report (multipart: image, latitude, longitude, description) |
+| POST | `/reports/upload` | ✔ | Upload a report (multipart: 1–5 `images`, latitude, longitude, description) |
+| DELETE | `/reports/{report_id}` | ✔ | Delete your own report (not allowed while it has a drive) |
 | GET | `/drives/feed` | – | Active drives and open reports |
 | POST | `/drives/` | ✔ | Create a drive for a report |
 | POST | `/drives/{drive_id}/join` | ✔ | Join a drive |
 | DELETE | `/drives/{drive_id}/leave` | ✔ | Leave a drive |
+| DELETE | `/drives/{drive_id}` | ✔ | Delete your own drive (planned drives only) |
 | GET | `/user/me/reports` | ✔ | Reports raised by the current user |
 | GET | `/user/me/drives` | ✔ | Drives the current user participates in |
-| POST | `/ai/chat` | ✔ | Send a message (and optional image) to the assistant |
+| POST | `/ai/chat` | ✔ | Send a message (and optional image); the reply streams back as one JSON event per line (`chunk`, `done` or `error`) |
 | GET | `/ai/history` | ✔ | The current user's chat history |
 
 Interactive API docs are available at `http://127.0.0.1:8000/docs` while the backend is running.

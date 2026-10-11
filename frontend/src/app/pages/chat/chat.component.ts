@@ -5,10 +5,11 @@ import { ChatService } from '../../core/services/chat.service';
 import { ChatMessage } from '../../core/models/chat-message.model';
 import { FormsModule } from '@angular/forms';
 import { ElementRef, ViewChild } from '@angular/core';
+import { ChatFormatPipe } from './chat-format.pipe';
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, ChatFormatPipe],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css'
 })
@@ -93,35 +94,34 @@ export class ChatComponent implements OnInit {
     this.imagePreview = null;
     this.isLoading = true;
 
-    const thinkingMessage: ChatMessage = {
+    // shows the typing dots until the first words arrive, then fills in as the reply streams
+    const reply: ChatMessage = {
       role: 'assistant',
       content: 'Thinking...',
       image: null
     };
-    this.messages.push(thinkingMessage);
+    this.messages.push(reply);
     this.scrollToBottom();
+    let received = '';
     this.chatService
     .sendMessage(text, image)
     .subscribe({
-      next: (response) => {
+      next: (chunk) => {
 
-        this.messages.pop();
-        this.messages.push({
-          role: 'assistant',
-          content: response.response,
-          image: null
-        });
-        this.isLoading = false;
+        received += chunk;
+        reply.content = received;
+        this.scrollToBottom();
 
       },
       error: (error) => {
         console.error(error);
-        this.messages.pop();
-        this.messages.push({
-            role: 'assistant',
-            content: 'Sorry, something went wrong.',
-            image: null
-        });
+        reply.content = received
+          ? `${received}\n\n(${error.message})` // keep what already arrived
+          : error.message;
+        this.isLoading = false;
+        this.scrollToBottom();
+      },
+      complete: () => {
         this.isLoading = false;
       }
 

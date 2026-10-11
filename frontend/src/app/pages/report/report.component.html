@@ -2,7 +2,7 @@
 
   <header class="page-header">
     <h1>Report an issue</h1>
-    <p>Share a photo and the exact location of the waste problem so your community can act on it.</p>
+    <p>Share photos and the exact location of the waste problem so your community can act on it.</p>
   </header>
 
   <div class="cc-card report-card">
@@ -25,36 +25,62 @@
 
         <h2 class="form-section__title">
           <span class="step">1</span>
-          Add a photo
+          Add photos
+          <span class="photo-limit">{{ selectedImages.length }} / {{ maxImages }}</span>
         </h2>
 
-        <label class="upload-zone" [class.has-image]="imagePreview">
+        <label class="upload-zone" *ngIf="selectedImages.length === 0">
 
           <input
             type="file"
             class="visually-hidden"
             accept="image/*"
+            multiple
             (change)="onFileSelected($event)">
 
-          <ng-container *ngIf="!imagePreview">
-            <span class="upload-icon">
-              <mat-icon>add_a_photo</mat-icon>
-            </span>
-            <strong>Click to upload a photo</strong>
-            <span class="upload-hint">JPEG, PNG or WEBP · up to 5 MB</span>
-          </ng-container>
-
-          <ng-container *ngIf="imagePreview">
-            <img
-              [src]="imagePreview"
-              alt="Preview of the selected photo">
-            <span class="upload-change">
-              <mat-icon class="icon-sm">swap_horiz</mat-icon>
-              Change photo
-            </span>
-          </ng-container>
+          <span class="upload-icon">
+            <mat-icon>add_a_photo</mat-icon>
+          </span>
+          <strong>Click to upload photos</strong>
+          <span class="upload-hint">Up to {{ maxImages }} photos · JPEG, PNG or WEBP · 5 MB each</span>
 
         </label>
+
+        <div class="photo-grid" *ngIf="selectedImages.length > 0">
+
+          <div
+            *ngFor="let image of selectedImages; let i = index"
+            class="photo-tile">
+
+            <img
+              *ngIf="image.preview"
+              [src]="image.preview"
+              [alt]="'Selected photo ' + (i + 1)">
+
+            <span class="cover-badge" *ngIf="i === 0">Cover</span>
+
+            <button
+              type="button"
+              class="photo-remove"
+              [attr.aria-label]="'Remove photo ' + (i + 1)"
+              (click)="removeImage(i)">
+              <mat-icon class="icon-sm">close</mat-icon>
+            </button>
+
+          </div>
+
+          <label class="photo-tile photo-add" *ngIf="selectedImages.length < maxImages">
+            <input
+              type="file"
+              class="visually-hidden"
+              accept="image/*"
+              multiple
+              (change)="onFileSelected($event)">
+            <mat-icon>add_photo_alternate</mat-icon>
+            <span>Add more</span>
+          </label>
+
+        </div>
 
       </section>
 

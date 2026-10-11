@@ -15,4 +15,11 @@ export class ReportService {
     );
 
   }
+  deleteReport(reportId: number) {
+
+    return this.http.delete(
+      `${environment.apiUrl}/reports/${reportId}`
+    );
+
+  }
 }

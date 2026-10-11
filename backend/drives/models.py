@@ -19,7 +19,7 @@ class Drive(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False
     )
-    participants = relationship("Participation", back_populates="drive")
+    participants = relationship("Participation", back_populates="drive", cascade="all, delete-orphan")
 
 class Participation(Base):
     __tablename__="participation"

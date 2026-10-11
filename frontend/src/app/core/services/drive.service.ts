@@ -29,6 +29,13 @@ export class DriveService {
     );
 
   }
+  deleteDrive(driveId: string) {
+
+    return this.http.delete(
+      `${environment.apiUrl}/drives/${driveId}`
+    );
+
+  }
   leaveDrive(driveId: string) {
 
     return this.http.delete(

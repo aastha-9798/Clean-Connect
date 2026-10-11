@@ -11,6 +11,12 @@
     </a>
   </header>
 
+  <div
+    *ngIf="errorMessage"
+    class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
   <div class="stats">
     <div class="stat-tile cc-card">
       <span class="stat-icon"><mat-icon>report</mat-icon></span>
@@ -54,6 +60,10 @@
           <span class="status-pill" [ngClass]="'status-' + report.status">
             {{ report.status }}
           </span>
+          <span class="photo-count" *ngIf="report.images.length > 1">
+            <mat-icon class="icon-sm">photo_library</mat-icon>
+            {{ report.images.length }}
+          </span>
         </div>
 
         <div class="media-card__body">
@@ -67,6 +77,22 @@
           <div class="meta-row">
             <mat-icon class="icon-sm">schedule</mat-icon>
             {{ report.created_at | date:'medium' }}
+          </div>
+
+          <div class="card-actions">
+            <span class="card-hint" *ngIf="report.has_drive">
+              <mat-icon class="icon-sm">info</mat-icon>
+              Has a drive
+            </span>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              [disabled]="report.has_drive"
+              [title]="report.has_drive ? 'Delete the drive for this report first' : 'Delete this report'"
+              (click)="deleteReport(report)">
+              <mat-icon class="icon-sm">delete_outline</mat-icon>
+              Delete
+            </button>
           </div>
 
         </div>
@@ -103,6 +129,10 @@
           <span class="status-pill" [ngClass]="'status-' + drive.status">
             {{ drive.status }}
           </span>
+          <span class="photo-count" *ngIf="drive.images.length > 1">
+            <mat-icon class="icon-sm">photo_library</mat-icon>
+            {{ drive.images.length }}
+          </span>
         </div>
 
         <div class="media-card__body">
@@ -119,6 +149,21 @@
           <div class="meta-row">
             <mat-icon class="icon-sm">group</mat-icon>
             {{ drive.participant_count }} {{ drive.participant_count === 1 ? 'participant' : 'participants' }}
+          </div>
+
+          <div class="card-actions" *ngIf="drive.is_organizer">
+            <span class="card-hint">
+              <mat-icon class="icon-sm">star</mat-icon>
+              Organiser
+            </span>
+            <button
+              *ngIf="drive.status === 'planned'"
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              (click)="deleteDrive(drive)">
+              <mat-icon class="icon-sm">delete_outline</mat-icon>
+              Delete
+            </button>
           </div>
 
         </div>

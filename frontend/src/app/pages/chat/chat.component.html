@@ -51,7 +51,14 @@
           </span>
 
           <ng-template #messageText>
-            <p class="message-text">{{ message.content }}</p>
+            <!-- the assistant's simple Markdown (bold, bullets) is shown formatted; the user's text stays as typed -->
+            <p
+              class="message-text"
+              *ngIf="message.role === 'assistant'; else plainText"
+              [innerHTML]="message.content | chatFormat"></p>
+            <ng-template #plainText>
+              <p class="message-text">{{ message.content }}</p>
+            </ng-template>
           </ng-template>
 
         </div>

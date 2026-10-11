@@ -10,15 +10,14 @@
 
   <div mat-dialog-content>
 
-    <div class="dialog-hero">
-      <img
-        [src]="drive.image"
-        alt="Photo of the drive location">
+    <app-image-gallery
+      [images]="drive.images"
+      alt="Photo of the drive location">
       <span class="status-pill status-planned">
         <mat-icon class="icon-sm">event_available</mat-icon>
         Planned drive
       </span>
-    </div>
+    </app-image-gallery>
 
     <div class="dialog-body">
 
@@ -86,7 +85,7 @@
 
   </div>
 
-  <div class="dialog-footer">
+  <div class="dialog-footer" *ngIf="!isOrganizer">
 
     <button
       class="btn btn-outline-danger"
@@ -100,6 +99,23 @@
       (click)="joinDrive()">
       <mat-icon class="icon-sm">how_to_reg</mat-icon>
       Join drive
+    </button>
+
+  </div>
+
+  <div class="dialog-footer dialog-footer-between" *ngIf="isOrganizer">
+
+    <span class="organizer-note">
+      <mat-icon class="icon-sm">star</mat-icon>
+      You're organising this drive
+    </span>
+
+    <button
+      type="button"
+      class="btn btn-outline-danger"
+      (click)="deleteDrive()">
+      <mat-icon class="icon-sm">delete_outline</mat-icon>
+      Delete drive
     </button>
 
   </div>

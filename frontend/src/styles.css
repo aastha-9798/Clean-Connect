@@ -122,12 +122,18 @@ h1, h2, h3, h4, h5 {
 }
 .media-card.clickable:focus-visible { border-color: var(--cc-green-600); }
 
+/* every card shows the same 4:3 crop of its cover photo, whatever the photo's own shape */
 .media-card__image {
   position: relative;
-  aspect-ratio: 16 / 10;
+  flex-shrink: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
   background: var(--cc-green-50);
 }
 .media-card__image img {
+  /* taken out of the layout so a tall (portrait) photo can't stretch the box */
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -137,6 +143,20 @@ h1, h2, h3, h4, h5 {
   position: absolute;
   top: 12px;
   left: 12px;
+}
+.photo-count {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(15, 25, 20, 0.6);
 }
 .media-card__body {
   padding: 16px 18px 18px;
@@ -148,6 +168,8 @@ h1, h2, h3, h4, h5 {
 .media-card__title {
   font-size: 1.05rem;
   font-weight: 650;
+  line-height: 1.3;
+  min-height: 2.6em; /* always reserve two lines so the details line up across cards */
   margin: 0 0 4px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -318,13 +340,16 @@ form.ng-submitted .form-control.ng-invalid ~ .invalid-feedback { display: block;
 .dialog-shell .mat-mdc-dialog-content { max-height: 75vh; }
 .dialog-shell .btn { white-space: nowrap; }
 
-.dialog-hero {
-  position: relative;
-  height: 260px;
-  background: var(--cc-green-50);
+/* full-screen photo viewer (opened from the image gallery) */
+.image-viewer-panel {
+  --mdc-dialog-container-color: transparent;
+  --mdc-dialog-container-shape: 0;
+  --mat-dialog-container-elevation-shadow: none;
 }
-.dialog-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.dialog-hero .status-pill { position: absolute; left: 20px; bottom: 16px; }
+.image-viewer-backdrop { background: rgba(8, 14, 10, 0.92); }
+
+/* status pill placed inside <app-image-gallery> sits over the large photo */
+.gallery-main > .status-pill { position: absolute; left: 20px; bottom: 16px; }
 
 .dialog-close {
   position: absolute;
@@ -376,15 +401,26 @@ form.ng-submitted .form-control.ng-invalid ~ .invalid-feedback { display: block;
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
   padding: 14px 24px 20px;
   border-top: 1px solid var(--cc-border);
 }
+.dialog-footer-start { justify-content: flex-start; }
+.dialog-footer-between { justify-content: space-between; }
+.organizer-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--cc-green-900);
+}
+.organizer-note .mat-icon { color: #ca8a04; }
 
 @media (max-width: 575.98px) {
   .page { padding: 24px 16px 48px; }
   .detail-list { grid-template-columns: 1fr; }
-  .dialog-hero { height: 200px; }
   .dialog-body { padding: 18px 18px 6px; }
   .dialog-footer { padding: 12px 18px 16px; }
   .dialog-footer .btn { flex: 1; }

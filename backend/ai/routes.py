@@ -1,37 +1,48 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import literal_column
-from backend.ai.service import handle_user_input
+from backend.ai.service import stream_reply, ChatError
 from backend.database import get_db
 from backend.authentication.dependencies import get_current_user
 from backend.ai.models import Message
 from backend.ai.service import get_or_create_conversation
 from backend.images import save_image
+import json
 
 router = APIRouter()
+
+CHAT_IMAGE_MAX_DIMENSION = 1024  # chat photos only need to be big enough for the model to understand them
 
 
 @router.post("/chat")
 def chat( # plain def (not async): FastAPI runs it in a thread pool, so the slow Gemini call doesn't block other requests
     message: str = Form(...),
     image: UploadFile = File(None),
-    db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
     image_path = None
 
     if image:
-        image_path = save_image(image.file.read()) # checks size and real image format, then saves it
+        # checks size and real image format, then saves it
+        image_path = save_image(image.file.read(), max_dimension=CHAT_IMAGE_MAX_DIMENSION)
 
-    response = handle_user_input(
-        db=db,
-        user_id=current_user.id,
-        user_message=message,
-        image_path=image_path
-    )
-    return {
-        "response": response
-    }
+    def events():
+        # The reply is streamed as it's written, one JSON object per line:
+        #   {"type": "chunk", "text": "..."}  a piece of the reply
+        #   {"type": "done"}                  the reply is complete and saved
+        #   {"type": "error", "message": "..."}  something went wrong (shown to the user)
+        try:
+            for text in stream_reply(current_user.id, message, image_path):
+                yield json.dumps({"type": "chunk", "text": text}) + "\n"
+            yield json.dumps({"type": "done"}) + "\n"
+        except ChatError as error:
+            yield json.dumps({"type": "error", "message": str(error)}) + "\n"
+        except Exception as error:
+            print("Chat error:", repr(error))
+            yield json.dumps({"type": "error", "message": "Sorry, something went wrong. Please try again."}) + "\n"
+
+    return StreamingResponse(events(), media_type="application/x-ndjson")
 
 @router.get("/history")
 def get_chat_history(

@@ -68,6 +68,10 @@
             <mat-icon class="icon-sm">event_available</mat-icon>
             Planned drive
           </span>
+          <span class="photo-count" *ngIf="drive.images.length > 1">
+            <mat-icon class="icon-sm">photo_library</mat-icon>
+            {{ drive.images.length }}
+          </span>
         </div>
 
         <div class="media-card__body">
@@ -133,6 +137,10 @@
             alt="Photo of the reported waste">
           <span class="status-pill" [ngClass]="'status-' + report.status">
             {{ report.status }}
+          </span>
+          <span class="photo-count" *ngIf="report.images.length > 1">
+            <mat-icon class="icon-sm">photo_library</mat-icon>
+            {{ report.images.length }}
           </span>
         </div>
 

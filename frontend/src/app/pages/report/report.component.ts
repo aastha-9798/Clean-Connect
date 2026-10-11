@@ -21,8 +21,11 @@ export class ReportComponent implements OnInit {
     description: new FormControl('')
   });
 
-  selectedFile: File | null = null; //union type
-  imagePreview: string | null = null;
+  readonly maxImages = 5;                 // same limits as the backend
+  readonly maxImageSize = 5 * 1024 * 1024; // 5 MB
+
+  // photos picked so far, in order (the first one becomes the cover)
+  selectedImages: { file: File; preview: string }[] = [];
   successMessage = '';
   errorMessage = '';
 
@@ -35,19 +38,32 @@ export class ReportComponent implements OnInit {
       return;
     }
 
-    const file = input.files[0];
-    if (file.size > 5 * 1024 * 1024) {
-      this.errorMessage = 'Image size must be less than 5 MB';
-      return;
-    }
-    this.selectedFile = file;
+    const files = Array.from(input.files);
+    input.value = ''; // clear it so picking the same file again still fires (change)
     this.errorMessage = '';
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagePreview = reader.result as string;
-    };
-    reader.readAsDataURL(file);
 
+    for (const file of files) {
+      if (this.selectedImages.length >= this.maxImages) {
+        this.errorMessage = `You can add up to ${this.maxImages} photos`;
+        break;
+      }
+      if (file.size > this.maxImageSize) {
+        this.errorMessage = `"${file.name}" is larger than 5 MB`;
+        continue;
+      }
+      const image = { file, preview: '' };
+      this.selectedImages.push(image);
+      const reader = new FileReader();
+      reader.onload = () => {
+        image.preview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+
+  }
+  removeImage(index: number): void {
+    this.selectedImages.splice(index, 1);
+    this.errorMessage = '';
   }
   getLocation(): void {
 
@@ -85,19 +101,21 @@ export class ReportComponent implements OnInit {
   }
   onSubmit(): void {
 
-    if (!this.selectedFile) {
+    if (this.selectedImages.length === 0) {
 
-      this.errorMessage = 'Please select an image';
+      this.errorMessage = 'Please add at least one photo';
 
       return;
     }
 
     const formData = new FormData();
 
-    formData.append(
-      'image',
-      this.selectedFile
-    );
+    for (const image of this.selectedImages) {
+      formData.append(
+        'images',
+        image.file
+      );
+    }
 
     formData.append(
       'latitude',
@@ -128,9 +146,7 @@ export class ReportComponent implements OnInit {
 
           this.reportForm.reset();
 
-          this.selectedFile = null;
-
-          this.imagePreview = null;
+          this.selectedImages = [];
 
         },
 
@@ -140,8 +156,11 @@ export class ReportComponent implements OnInit {
 
           this.successMessage = '';
 
+          // show the backend's reason when it gives one (e.g. "Image 3: Invalid file type...")
           this.errorMessage =
-            'Failed to submit report';
+            typeof error.error?.detail === 'string'
+              ? error.error.detail
+              : 'Failed to submit report';
 
         }
 
