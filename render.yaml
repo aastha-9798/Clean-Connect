@@ -1,0 +1,29 @@
+# Render Blueprint for the CleanConnect backend (free plan). See DEPLOY.md.
+# Values marked "sync: false" are asked for when the Blueprint is created and never stored in the repo.
+services:
+  - type: web
+    name: cleanconnect-api
+    runtime: python
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    # --proxy-headers: Render terminates HTTPS in front of the app, so trust its forwarded headers
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips "*"
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.4"
+      - key: SECRET_KEY
+        generateValue: true   # Render creates a long random value
+      - key: DATABASE_URL
+        sync: false           # Supabase "Session pooler" connection string
+      - key: SUPABASE_URL
+        sync: false           # https://<project-ref>.supabase.co
+      - key: SUPABASE_SERVICE_KEY
+        sync: false           # Supabase secret key (server-side only)
+      - key: SUPABASE_BUCKET
+        value: uploads
+      - key: GOOGLE_API_KEY
+        sync: false           # Gemini API key for the AI assistant
+      - key: CORS_ORIGINS
+        sync: false           # your Vercel address, e.g. https://cleanconnect.vercel.app

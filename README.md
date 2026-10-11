@@ -71,6 +71,9 @@ frontend/
 
 Interactive API docs are available at `http://127.0.0.1:8000/docs` while the backend is running.
 
+## Deployment
+The app can be deployed for free (Vercel + Render + Supabase) — see **[DEPLOY.md](DEPLOY.md)** for the step-by-step guide.
+
 ## Getting Started
 
 ### Prerequisites

@@ -45,7 +45,6 @@ export class LoginComponent {
           );
           this.successMessage = 'Login successful';
           this.errorMessage = '';
-          console.log(response);
         },
 
         error: (error) => {

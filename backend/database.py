@@ -2,9 +2,14 @@ from sqlalchemy import create_engine, DateTime
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.orm import sessionmaker, declarative_base , Session
 from datetime import timezone
+from backend.config import DATABASE_URL, IS_SQLITE
 
-DB_url="sqlite:///./backend/cleanconnect.db"
-engine = create_engine(DB_url, connect_args={"check_same_thread": False})
+# SQLite locally, Supabase Postgres in production (DATABASE_URL, see config.py)
+if IS_SQLITE:
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    # pool_pre_ping replaces connections the pooler has closed while the app was idle
+    engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_size=5, max_overflow=5)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 

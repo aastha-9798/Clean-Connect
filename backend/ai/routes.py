@@ -1,13 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import literal_column
 from backend.ai.service import stream_reply, ChatError
 from backend.database import get_db
 from backend.authentication.dependencies import get_current_user
 from backend.ai.models import Message
 from backend.ai.service import get_or_create_conversation
-from backend.images import save_image
+from backend.images import save_image, image_url
 import json
 
 router = APIRouter()
@@ -21,11 +20,11 @@ def chat( # plain def (not async): FastAPI runs it in a thread pool, so the slow
     image: UploadFile = File(None),
     current_user = Depends(get_current_user)
 ):
-    image_path = None
+    stored_image = None
 
     if image:
-        # checks size and real image format, then saves it
-        image_path = save_image(image.file.read(), max_dimension=CHAT_IMAGE_MAX_DIMENSION)
+        # checks size and real image format, then saves it (and keeps the bytes to send to Gemini)
+        stored_image = save_image(image.file.read(), max_dimension=CHAT_IMAGE_MAX_DIMENSION)
 
     def events():
         # The reply is streamed as it's written, one JSON object per line:
@@ -33,7 +32,7 @@ def chat( # plain def (not async): FastAPI runs it in a thread pool, so the slow
         #   {"type": "done"}                  the reply is complete and saved
         #   {"type": "error", "message": "..."}  something went wrong (shown to the user)
         try:
-            for text in stream_reply(current_user.id, message, image_path):
+            for text in stream_reply(current_user.id, message, stored_image):
                 yield json.dumps({"type": "chunk", "text": text}) + "\n"
             yield json.dumps({"type": "done"}) + "\n"
         except ChatError as error:
@@ -55,24 +54,18 @@ def get_chat_history(
     messages = (
         db.query(Message)
         .filter_by(conversation_id=conversation.id)
-        .order_by(Message.created_at.asc(), literal_column("messages.rowid").asc()) # rowid breaks ties in insertion order
+        .order_by(Message.created_at.asc(), Message.id.asc())
         .all()
     )
     history = []
     for msg in messages:
-        image_url = None
-        if msg.image_path:
-            image_url = (
-                str(request.base_url)
-                + str(msg.image_path).replace("\\", "/")
-            )
         history.append({
 
             "role": msg.role,
 
             "content": msg.content,
 
-            "image": image_url
+            "image": image_url(request, msg.image_path) if msg.image_path else None
 
         })
 

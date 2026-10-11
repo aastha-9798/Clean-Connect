@@ -1,8 +1,9 @@
 from fastapi import HTTPException, Request
 from PIL import Image, ImageOps
+from typing import NamedTuple
 import io
-import os
 import uuid
+from backend import storage
 #It ignores the client’s filename and declared type. It checks the actual bytes with Pillow,
 #  allows only JPEG, PNG and WEBP, and picks the file extension from the real format.
 #  It also re-saves the image, which removes the EXIF location data while keeping phone photos the right way up.
@@ -11,6 +12,12 @@ MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 MAX_IMAGES = 5  # most images allowed in one upload (per report)
 MAX_DIMENSION = 1600  # longest side in pixels; bigger photos are scaled down when saved to save disk space
 ALLOWED_FORMATS = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp"}  # format detected by Pillow -> extension to save with
+MIME_TYPES = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
+
+class StoredImage(NamedTuple):
+    path: str       # what to keep in the database (see storage.py)
+    data: bytes     # the cleaned-up image as saved
+    mime_type: str
 
 def _validate_image(contents: bytes, max_dimension: int = MAX_DIMENSION) -> tuple[Image.Image, str]:
     """Checks uploaded bytes are a real JPEG/PNG/WEBP under the size limit.
@@ -38,17 +45,19 @@ def _validate_image(contents: bytes, max_dimension: int = MAX_DIMENSION) -> tupl
         raise HTTPException(status_code=400, detail="Invalid file type. Only images are allowed.")
     return img, img_format
 
-def _store_image(img: Image.Image, img_format: str) -> str:
-    os.makedirs("uploads", exist_ok=True)
-    file_path = os.path.join("uploads", str(uuid.uuid4()) + ALLOWED_FORMATS[img_format])
-
+def _store_image(img: Image.Image, img_format: str) -> StoredImage:
     # re-encoding writes only the pixels, which also strips EXIF metadata such as the phone's GPS location
+    buffer = io.BytesIO()
     save_options = {"quality": 90} if img_format in ("JPEG", "WEBP") else {}
-    img.save(file_path, format=img_format, **save_options)
-    return file_path
+    img.save(buffer, format=img_format, **save_options)
+    data = buffer.getvalue()
 
-def save_image(contents: bytes, max_dimension: int = MAX_DIMENSION) -> str:
-    """Validates one uploaded image, saves a clean copy in uploads/ and returns its path."""
+    name = str(uuid.uuid4()) + ALLOWED_FORMATS[img_format]
+    path = storage.save_file(name, data, MIME_TYPES[img_format])  # local uploads/ or Supabase Storage
+    return StoredImage(path, data, MIME_TYPES[img_format])
+
+def save_image(contents: bytes, max_dimension: int = MAX_DIMENSION) -> StoredImage:
+    """Validates one uploaded image, stores a clean copy and returns it."""
     img, img_format = _validate_image(contents, max_dimension)
     return _store_image(img, img_format)
 
@@ -71,22 +80,18 @@ def save_images(contents_list: list[bytes], max_count: int = MAX_IMAGES) -> list
     paths = []
     try:
         for img, img_format in validated:
-            paths.append(_store_image(img, img_format))
+            paths.append(_store_image(img, img_format).path)
     except Exception:
         delete_images(paths)
         raise
     return paths
 
 def delete_images(paths: list[str]) -> None:
-    for path in paths:
-        try:
-            os.remove(path)
-        except OSError:
-            pass
+    storage.delete_files(paths)
 
 def image_url(request: Request, path: str) -> str:
-    """Builds the public URL for a file saved in uploads/."""
-    return str(request.base_url) + path.replace("\\", "/")
+    """Builds the public URL for a stored photo."""
+    return storage.public_url(request, path)
 
 def report_image_urls(request: Request, report) -> list[str]:
     """URLs of all photos of a report, cover first."""

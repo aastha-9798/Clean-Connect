@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from collections.abc import Iterator
 from backend.ai.models import Conversation, Message
 from backend.database import SessionLocal
-from sqlalchemy import literal_column
 
 # Load environment variables
 load_dotenv()
@@ -60,7 +59,6 @@ def _is_unsupported_thinking_level(error: errors.APIError, model: str) -> bool:
         and _thinking_level_for_model.get(model) != types.ThinkingLevel.LOW
     )
 
-IMAGE_MIME_TYPES = {".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
 
 class ChatError(Exception):
     """The reply couldn't be generated; the message is safe to show to the user."""
@@ -91,14 +89,14 @@ def get_last_messages(db, conversation_id, limit=HISTORY_LIMIT):
     messages = (
         db.query(Message)
         .filter_by(conversation_id=conversation_id)
-        .order_by(Message.created_at.desc(), literal_column("messages.rowid").desc()) # rowid breaks ties in insertion order
+        .order_by(Message.created_at.desc(), Message.id.desc())
         .limit(limit)
         .all()
     )
 
     return list(reversed(messages))  # important: oldest → newest
 
-def build_contents(history, user_message, image_path=None) -> list[types.Content]:
+def build_contents(history, user_message, image=None) -> list[types.Content]:
     """Turns the conversation into the role-tagged messages Gemini expects.
 
     Earlier messages are sent as text only; the image (if any) is attached to the new message.
@@ -111,10 +109,8 @@ def build_contents(history, user_message, image_path=None) -> list[types.Content
         contents.append(types.Content(role=role, parts=[types.Part.from_text(text=msg.content)]))
 
     parts = [types.Part.from_text(text=user_message)]
-    if image_path:
-        with open(image_path, "rb") as f:
-            mime_type = IMAGE_MIME_TYPES.get(os.path.splitext(image_path)[1].lower(), "image/jpeg")
-            parts.append(types.Part.from_bytes(data=f.read(), mime_type=mime_type))
+    if image:
+        parts.append(types.Part.from_bytes(data=image.data, mime_type=image.mime_type))
     contents.append(types.Content(role="user", parts=parts))
     return contents
 
@@ -156,7 +152,7 @@ def _stream_from_models(contents) -> Iterator[str]:
         raise ChatError("The assistant has reached its usage limit for now. Please try again in a few minutes.")
     raise ChatError("The assistant is busy right now. Please try again in a moment.")
 
-def stream_reply(user_id, user_message, image_path=None) -> Iterator[str]:
+def stream_reply(user_id, user_message, image=None) -> Iterator[str]:
     """Yields the assistant's reply piece by piece as Gemini writes it.
 
     Both messages are saved only once the whole reply has arrived. Uses its own
@@ -167,7 +163,7 @@ def stream_reply(user_id, user_message, image_path=None) -> Iterator[str]:
     try:
         conversation = get_or_create_conversation(db, user_id)
         history = get_last_messages(db, conversation.id)
-        contents = build_contents(history, user_message, image_path)
+        contents = build_contents(history, user_message, image)
 
         reply_parts = []
         for text in _stream_from_models(contents):
@@ -178,7 +174,7 @@ def stream_reply(user_id, user_message, image_path=None) -> Iterator[str]:
         if not bot_reply:
             raise ChatError("Sorry, the assistant couldn't answer that. Please try again.")
 
-        save_message(db, conversation.id, "user", user_message, str(image_path) if image_path else None)
+        save_message(db, conversation.id, "user", user_message, image.path if image else None)
         save_message(db, conversation.id, "assistant", bot_reply)
     finally:
         db.close()
