@@ -30,6 +30,10 @@
         <span class="stat-value">{{ reports.length }}</span>
         <span class="stat-label">Open reports</span>
       </div>
+      <div class="stat">
+        <span class="stat-value">{{ completedDrives.length }}</span>
+        <span class="stat-label">Spots cleaned</span>
+      </div>
     </div>
   </div>
 </section>
@@ -172,5 +176,67 @@
     </div>
 
   </div>
+
+<ng-container *ngIf="completedDrives.length > 0">
+
+    <h2 class="section-title section-gap">
+      Recently cleaned
+      <span class="count-chip">{{ completedDrives.length }}</span>
+    </h2>
+
+    <div class="row g-4">
+
+      <div
+        *ngFor="let drive of completedDrives"
+        class="col-sm-6 col-lg-4">
+
+        <article
+          class="media-card clickable"
+          tabindex="0"
+          role="button"
+          (click)="openDriveDialog(drive)"
+          (keydown.enter)="openDriveDialog(drive)">
+
+          <div class="media-card__image before-after">
+            <div class="ba-half">
+              <img [src]="drive.image" alt="Before the cleanup">
+              <span class="ba-label">Before</span>
+            </div>
+            <div class="ba-half">
+              <img [src]="drive.after_images[0]" alt="After the cleanup">
+              <span class="ba-label ba-after">After</span>
+            </div>
+          </div>
+
+          <div class="media-card__body">
+
+            <h3 class="media-card__title">
+              {{ drive.description }}
+            </h3>
+
+            <div class="meta-row">
+              <mat-icon class="icon-sm">task_alt</mat-icon>
+              Cleaned {{ drive.completed_at | date:'mediumDate' }}
+            </div>
+
+            <div class="meta-row">
+              <mat-icon class="icon-sm">volunteer_activism</mat-icon>
+              {{ drive.checked_in_count }} {{ drive.checked_in_count === 1 ? 'volunteer' : 'volunteers' }} · organised by {{ drive.organized_by }}
+            </div>
+
+            <span class="card-link">
+              See before & after
+              <mat-icon class="icon-sm">arrow_forward</mat-icon>
+            </span>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </div>
+
+  </ng-container>
 
 </div>

@@ -68,6 +68,22 @@
   color: var(--cc-muted);
 }
 
+/* "Recently cleaned" cards show the before and after photos side by side */
+.before-after { display: flex; gap: 2px; }
+.ba-half { position: relative; flex: 1; overflow: hidden; }
+.ba-label {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(15, 25, 20, 0.6);
+}
+.ba-after { background: var(--cc-green-700); }
+
 .card-link {
   margin-top: auto;
   padding-top: 10px;

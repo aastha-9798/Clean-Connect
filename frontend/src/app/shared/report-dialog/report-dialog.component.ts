@@ -38,7 +38,17 @@ export class ReportDialogComponent {
     private authService: AuthService,
     private dialog: MatDialog,
     private dialogRef: MatDialogRef<ReportDialogComponent>
-  ) {}
+  ) {
+    // Esc and clicks outside the dialog go through closeDialog() too,
+    // so the page behind still learns that something changed and reloads
+    dialogRef.disableClose = true;
+    dialogRef.backdropClick().subscribe(() => this.closeDialog());
+    dialogRef.keydownEvents().subscribe((event) => {
+      if (event.key === 'Escape') {
+        this.closeDialog();
+      }
+    });
+  }
 
   // only the person who reported it sees the delete button
   get isOwner(): boolean {

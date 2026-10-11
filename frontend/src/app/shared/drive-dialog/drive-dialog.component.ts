@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   MAT_DIALOG_DATA,
@@ -13,16 +13,21 @@ import { FeedDrive } from '../../core/models/feed-drive.model';
 import { DriveService } from '../../core/services/drive.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../confirm-dialog/confirm-dialog.component';
+import { DriveDayPanelComponent } from '../drive-day-panel/drive-day-panel.component';
 
 @Component({
   selector: 'app-drive-dialog',
-  imports: [CommonModule,  MatDialogModule,  MatIconModule, ImageGalleryComponent],
+  imports: [CommonModule,  MatDialogModule,  MatIconModule, ImageGalleryComponent, DriveDayPanelComponent],
   templateUrl: './drive-dialog.component.html',
   styleUrl: './drive-dialog.component.css'
 })
 export class DriveDialogComponent {
   successMessage = '';
   errorMessage = '';
+
+  // check-in, photos and organizer tools; reloaded after joining or leaving
+  @ViewChild(DriveDayPanelComponent) dayPanel?: DriveDayPanelComponent;
+
   constructor(
     @Inject(MAT_DIALOG_DATA)
     public drive: FeedDrive,
@@ -31,11 +36,40 @@ export class DriveDialogComponent {
     private router: Router,
     private dialog: MatDialog,
     private dialogRef: MatDialogRef<DriveDialogComponent>
-  ) {}
+  ) {
+    // Esc and clicks outside the dialog go through closeDialog() too,
+    // so the page behind still learns that something changed and reloads
+    dialogRef.disableClose = true;
+    dialogRef.backdropClick().subscribe(() => this.closeDialog());
+    dialogRef.keydownEvents().subscribe((event) => {
+      if (event.key === 'Escape') {
+        this.closeDialog();
+      }
+    });
+  }
 
   // the organizer can delete the drive (but can't join or leave it)
   get isOrganizer(): boolean {
     return this.authService.getCurrentUserId() === this.drive.organizer_id;
+  }
+
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  get statusLabel(): string {
+    return { planned: 'Planned drive', completed: 'Completed', cancelled: 'Cancelled' }[this.drive.status];
+  }
+
+  get statusIcon(): string {
+    return { planned: 'event_available', completed: 'task_alt', cancelled: 'event_busy' }[this.drive.status];
+  }
+
+  // something changed in the day panel (check-in, photos, completed) - reload the feed when the dialog closes
+  onPanelChanged(): void {
+    this.driveChanged = true;
+    this.successMessage = '';
+    this.errorMessage = '';
   }
 
   deleteDrive(): void {
@@ -110,6 +144,8 @@ export class DriveDialogComponent {
 
         this.errorMessage = '';
         this.driveChanged = true;
+        this.drive.participant_count += 1;
+        this.dayPanel?.loadMyState();
 
       },
 
@@ -131,7 +167,9 @@ export class DriveDialogComponent {
         else {
 
           this.errorMessage =
-            'Failed to join drive';
+            typeof error.error?.detail === 'string'
+              ? error.error.detail
+              : 'Failed to join drive';
 
         }
 
@@ -166,6 +204,8 @@ export class DriveDialogComponent {
 
         this.errorMessage = '';
         this.driveChanged = true;
+        this.drive.participant_count = Math.max(0, this.drive.participant_count - 1);
+        this.dayPanel?.loadMyState();
 
       },
 
@@ -192,8 +232,11 @@ export class DriveDialogComponent {
         }
         else {
 
+          // e.g. "You've already checked in to this drive"
           this.errorMessage =
-            'Failed to leave drive';
+            typeof error.error?.detail === 'string'
+              ? error.error.detail
+              : 'Failed to leave drive';
 
         }
 

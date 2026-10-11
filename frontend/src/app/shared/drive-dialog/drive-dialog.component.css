@@ -1,1 +1,19 @@
 /* Dialog layout styles are shared with the report dialog and live in src/styles.css */
+
+.after-section { margin: 4px 0 18px; }
+
+.after-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: var(--cc-green-900);
+}
+
+.cancelled-note { font-size: 0.88rem; }
+
+@media (max-width: 575.98px) {
+  .after-title { padding: 0 18px; }
+}

@@ -1,0 +1,152 @@
+<section class="day-panel" *ngIf="me">
+
+  <h3 class="day-title">
+    <mat-icon class="icon-sm">today</mat-icon>
+    On the day
+  </h3>
+
+  <!-- check-in (planned drives only) -->
+  <div class="day-row" *ngIf="drive.status === 'planned' || me.checked_in">
+
+    <span class="day-icon" [class.done]="me.checked_in">
+      <mat-icon class="icon-sm">{{ me.checked_in ? 'check_circle' : 'where_to_vote' }}</mat-icon>
+    </span>
+
+    <div class="day-text">
+      <ng-container *ngIf="me.checked_in">
+        <strong>You're checked in</strong>
+        <span>Thanks for showing up!</span>
+      </ng-container>
+
+      <ng-container *ngIf="!me.checked_in && checkInNotOpenYet">
+        <strong>Check-in</strong>
+        <span>Opens {{ drive.check_in_opens_at | date:'medium' }}, when you're at the drive location.</span>
+      </ng-container>
+
+      <ng-container *ngIf="!me.checked_in && checkInClosed">
+        <strong>Check-in has closed</strong>
+        <span>It was open until {{ drive.check_in_closes_at | date:'shortTime' }}.</span>
+      </ng-container>
+
+      <ng-container *ngIf="canCheckIn">
+        <strong>At the drive? Check in</strong>
+        <span>
+          We'll confirm you're within 200 m of the spot. Your location isn't saved.
+          <ng-container *ngIf="!me.is_participant">You'll also be added to the drive.</ng-container>
+        </span>
+      </ng-container>
+    </div>
+
+    <button
+      *ngIf="canCheckIn"
+      type="button"
+      class="btn btn-primary btn-sm"
+      [disabled]="busy"
+      (click)="checkIn()">
+      <mat-icon class="icon-sm">my_location</mat-icon>
+      {{ locating ? 'Locating…' : 'Check in' }}
+    </button>
+
+  </div>
+
+  <!-- "after" photos -->
+  <div class="day-row" *ngIf="photosOpen && (me.checked_in || drive.status === 'planned')">
+
+    <span class="day-icon">
+      <mat-icon class="icon-sm">add_a_photo</mat-icon>
+    </span>
+
+    <div class="day-text">
+      <strong>"After" photos</strong>
+      <span *ngIf="!me.checked_in">Check in to add photos of the cleaned-up spot.</span>
+      <span *ngIf="me.checked_in && photosLeftForMe > 0">
+        You can add {{ photosLeftForMe }} more ·
+        {{ drive.after_images.length }} / {{ maxDrivePhotos }} added for this drive
+      </span>
+      <span *ngIf="me.checked_in && photosLeftForMe === 0">
+        <ng-container *ngIf="me.my_photo_count >= maxPhotosPerPerson">You've added your {{ maxPhotosPerPerson }} photos. Thank you!</ng-container>
+        <ng-container *ngIf="me.my_photo_count < maxPhotosPerPerson">This drive has all {{ maxDrivePhotos }} photos.</ng-container>
+      </span>
+    </div>
+
+    <label
+      *ngIf="me.checked_in && photosLeftForMe > 0"
+      class="btn btn-outline-primary btn-sm mb-0"
+      [class.disabled]="busy">
+      <mat-icon class="icon-sm">upload</mat-icon>
+      Add photos
+      <input
+        type="file"
+        class="visually-hidden"
+        accept="image/*"
+        multiple
+        [disabled]="busy"
+        (change)="onPhotosSelected($event)">
+    </label>
+
+  </div>
+
+  <!-- organizer tools -->
+  <ng-container *ngIf="me.is_organizer && drive.status === 'planned'">
+
+    <div class="day-row">
+
+      <span class="day-icon">
+        <mat-icon class="icon-sm">task_alt</mat-icon>
+      </span>
+
+      <div class="day-text">
+        <strong>Finish the drive</strong>
+        <span *ngIf="!hasStarted">You can mark it completed once it has started.</span>
+        <span *ngIf="hasStarted && drive.after_images.length === 0">Add at least one "after" photo first (check in to add photos).</span>
+        <span *ngIf="canComplete">Everyone done? Mark it completed to show the spot as cleaned up.</span>
+        <span class="deadline">
+          Not completed by {{ drive.completion_deadline | date:'medium' }}, it will be cancelled automatically.
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        [disabled]="!canComplete || busy"
+        (click)="completeDrive()">
+        <mat-icon class="icon-sm">task_alt</mat-icon>
+        Mark completed
+      </button>
+
+    </div>
+
+    <button
+      type="button"
+      class="attendees-toggle"
+      (click)="toggleAttendees()">
+      <mat-icon class="icon-sm">{{ showAttendees ? 'expand_less' : 'expand_more' }}</mat-icon>
+      Attendees · {{ drive.checked_in_count }} checked in of {{ drive.participant_count }} joined
+    </button>
+
+    <ul class="attendee-list" *ngIf="showAttendees && attendees">
+      <li *ngFor="let attendee of attendees">
+        <span class="attendee-name">
+          {{ attendee.username }}
+          <span class="attendee-tag" *ngIf="attendee.is_organizer">Organiser</span>
+        </span>
+        <span class="attendee-state" [class.in]="attendee.checked_in">
+          {{ attendee.checked_in ? 'Checked in' : 'Joined' }}
+        </span>
+        <button
+          *ngIf="attendee.checked_in && !attendee.is_organizer"
+          type="button"
+          class="btn btn-link btn-sm attendee-remove"
+          [disabled]="busy"
+          (click)="removeCheckIn(attendee)">
+          Remove check-in
+        </button>
+      </li>
+    </ul>
+
+  </ng-container>
+
+  <div *ngIf="successMessage" class="alert alert-success mt-3 mb-0">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-danger mt-3 mb-0">{{ errorMessage }}</div>
+
+</section>

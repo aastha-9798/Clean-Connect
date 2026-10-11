@@ -9,6 +9,7 @@ import { UserReport } from '../../core/models/user-report.model';
 import { UserDrive } from '../../core/models/user-drive.model';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { DriveDialogComponent } from '../../shared/drive-dialog/drive-dialog.component';
 
 @Component({
   selector: 'app-profile',
@@ -57,6 +58,18 @@ export class ProfileComponent implements OnInit {
           console.error(error);
         }
 
+      });
+  }
+
+  // the same drive dialog as the feed (check-in, photos, completing); cancelled drives can only be opened from here
+  openDrive(drive: UserDrive): void {
+    this.dialog.open(DriveDialogComponent, { width: '700px', data: drive })
+      .afterClosed()
+      .subscribe((changed) => {
+        if (changed) {
+          this.loadDrives();
+          this.loadReports(); // the report's status may have changed too (e.g. resolved)
+        }
       });
   }
 

@@ -62,13 +62,15 @@
   gap: 8px;
 }
 .card-hint {
-  margin-right: auto;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 0.8rem;
   color: var(--cc-muted);
 }
+
+.card-hint.attended { color: var(--cc-green-700); font-weight: 600; }
+.card-actions .btn { margin-left: auto; }
 
 @media (max-width: 575.98px) {
   .stats { gap: 10px; }

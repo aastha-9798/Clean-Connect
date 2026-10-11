@@ -19,6 +19,7 @@ import { ReportDialogComponent } from '../../shared/report-dialog/report-dialog.
 export class FeedComponent implements OnInit{
   reports: FeedReport[] = [];
   drives: FeedDrive[] = [];
+  completedDrives: FeedDrive[] = []; // shown as "Recently cleaned" with before/after photos
 
   constructor(
     private feedService: FeedService,
@@ -35,6 +36,7 @@ export class FeedComponent implements OnInit{
         next: (response) => {
           this.reports = response.reports;
           this.drives = response.drives;
+          this.completedDrives = response.completed_drives;
         },
 
         error: (error) => {

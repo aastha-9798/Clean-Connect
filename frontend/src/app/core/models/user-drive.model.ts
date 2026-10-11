@@ -1,19 +1,8 @@
-export interface UserDrive {
-  drive_id: string;
-  description: string;
-  scheduled_at: string;
-  status: string;
+import { FeedDrive } from './feed-drive.model';
+
+// a drive the user joined or organised (including completed and cancelled ones)
+export interface UserDrive extends FeedDrive {
   is_organizer: boolean;
-  participant_count: number;
-  latitude: number;
-  longitude: number;
-  image: string;      // cover photo (first of images)
-  images: string[];   // all photos of the report, cover first
-
-  report: {
-    id: number;
-    description: string;
-  };
-
+  checked_in: boolean; // shown as "Attended"
   joined_at: string;
 }

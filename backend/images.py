@@ -52,14 +52,14 @@ def save_image(contents: bytes, max_dimension: int = MAX_DIMENSION) -> str:
     img, img_format = _validate_image(contents, max_dimension)
     return _store_image(img, img_format)
 
-def save_images(contents_list: list[bytes]) -> list[str]:
-    """Validates and saves 1 to MAX_IMAGES uploaded images, returning their paths in order.
+def save_images(contents_list: list[bytes], max_count: int = MAX_IMAGES) -> list[str]:
+    """Validates and saves 1 to max_count uploaded images, returning their paths in order.
 
     Every image is checked before any is saved, so one bad file doesn't leave
     the others behind on disk.
     """
-    if not 1 <= len(contents_list) <= MAX_IMAGES:
-        raise HTTPException(status_code=400, detail=f"Upload between 1 and {MAX_IMAGES} images.")
+    if not 1 <= len(contents_list) <= max_count:
+        raise HTTPException(status_code=400, detail=f"Upload between 1 and {max_count} images.")
 
     validated = []
     for number, contents in enumerate(contents_list, start=1):

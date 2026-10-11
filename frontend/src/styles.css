@@ -213,6 +213,10 @@ h1, h2, h3, h4, h5 {
 }
 .status-pending { background: #fef3c7; color: #92400e; }
 .status-planned { background: var(--cc-green-100); color: var(--cc-green-900); }
+.status-in_progress { background: #dbeafe; color: #1e40af; }
+.status-resolved,
+.status-completed { background: var(--cc-green-700); color: #fff; }
+.status-cancelled { background: #e5e7eb; color: #4b5563; }
 
 /* ---------- Empty states ---------- */
 .empty-state {

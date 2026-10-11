@@ -12,10 +12,10 @@
 
     <app-image-gallery
       [images]="drive.images"
-      alt="Photo of the drive location">
-      <span class="status-pill status-planned">
-        <mat-icon class="icon-sm">event_available</mat-icon>
-        Planned drive
+      alt="Photo of the drive location before the cleanup">
+      <span class="status-pill" [ngClass]="'status-' + drive.status">
+        <mat-icon class="icon-sm">{{ statusIcon }}</mat-icon>
+        {{ statusLabel }}
       </span>
     </app-image-gallery>
 
@@ -25,6 +25,10 @@
         {{ drive.description }}
       </h2>
 
+      <div class="alert alert-secondary cancelled-note" *ngIf="drive.status === 'cancelled'">
+        This drive was cancelled because it wasn't marked as completed within 2 days of its start.
+      </div>
+
       <div class="detail-list">
 
         <div class="detail">
@@ -32,6 +36,14 @@
           <div>
             <span class="detail-label">When</span>
             <span class="detail-value">{{ drive.scheduled_at | date:'medium' }}</span>
+          </div>
+        </div>
+
+        <div class="detail" *ngIf="drive.completed_at">
+          <mat-icon class="icon-sm">task_alt</mat-icon>
+          <div>
+            <span class="detail-label">Completed</span>
+            <span class="detail-value">{{ drive.completed_at | date:'medium' }}</span>
           </div>
         </div>
 
@@ -47,7 +59,7 @@
           <mat-icon class="icon-sm">group</mat-icon>
           <div>
             <span class="detail-label">Participants</span>
-            <span class="detail-value">{{ drive.participant_count }}</span>
+            <span class="detail-value">{{ drive.participant_count }} joined · {{ drive.checked_in_count }} checked in</span>
           </div>
         </div>
 
@@ -69,6 +81,28 @@
 
       </div>
 
+    </div>
+
+    <section class="after-section" *ngIf="drive.after_images.length > 0">
+      <h3 class="after-title">
+        <mat-icon class="icon-sm">auto_awesome</mat-icon>
+        After the cleanup
+        <span class="count-chip">{{ drive.after_images.length }}</span>
+      </h3>
+      <app-image-gallery
+        [images]="drive.after_images"
+        alt="Photo after the cleanup">
+      </app-image-gallery>
+    </section>
+
+    <div class="dialog-body">
+
+      <app-drive-day-panel
+        *ngIf="isLoggedIn && drive.status !== 'cancelled'"
+        [drive]="drive"
+        (changed)="onPanelChanged()">
+      </app-drive-day-panel>
+
       <div
         *ngIf="successMessage"
         class="alert alert-success">
@@ -85,39 +119,43 @@
 
   </div>
 
-  <div class="dialog-footer" *ngIf="!isOrganizer">
+  <ng-container *ngIf="drive.status === 'planned'">
 
-    <button
-      class="btn btn-outline-danger"
-      (click)="leaveDrive()">
-      <mat-icon class="icon-sm">logout</mat-icon>
-      Leave drive
-    </button>
+    <div class="dialog-footer" *ngIf="!isOrganizer">
 
-    <button
-      class="btn btn-primary"
-      (click)="joinDrive()">
-      <mat-icon class="icon-sm">how_to_reg</mat-icon>
-      Join drive
-    </button>
+      <button
+        class="btn btn-outline-danger"
+        (click)="leaveDrive()">
+        <mat-icon class="icon-sm">logout</mat-icon>
+        Leave drive
+      </button>
 
-  </div>
+      <button
+        class="btn btn-primary"
+        (click)="joinDrive()">
+        <mat-icon class="icon-sm">how_to_reg</mat-icon>
+        Join drive
+      </button>
 
-  <div class="dialog-footer dialog-footer-between" *ngIf="isOrganizer">
+    </div>
 
-    <span class="organizer-note">
-      <mat-icon class="icon-sm">star</mat-icon>
-      You're organising this drive
-    </span>
+    <div class="dialog-footer dialog-footer-between" *ngIf="isOrganizer">
 
-    <button
-      type="button"
-      class="btn btn-outline-danger"
-      (click)="deleteDrive()">
-      <mat-icon class="icon-sm">delete_outline</mat-icon>
-      Delete drive
-    </button>
+      <span class="organizer-note">
+        <mat-icon class="icon-sm">star</mat-icon>
+        You're organising this drive
+      </span>
 
-  </div>
+      <button
+        type="button"
+        class="btn btn-outline-danger"
+        (click)="deleteDrive()">
+        <mat-icon class="icon-sm">delete_outline</mat-icon>
+        Delete drive
+      </button>
+
+    </div>
+
+  </ng-container>
 
 </div>

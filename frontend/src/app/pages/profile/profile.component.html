@@ -58,7 +58,7 @@
             [src]="report.image_url"
             alt="Photo of the reported waste">
           <span class="status-pill" [ngClass]="'status-' + report.status">
-            {{ report.status }}
+            {{ report.status.replace('_', ' ') }}
           </span>
           <span class="photo-count" *ngIf="report.images.length > 1">
             <mat-icon class="icon-sm">photo_library</mat-icon>
@@ -120,7 +120,12 @@
       *ngFor="let drive of drives"
       class="col-sm-6 col-lg-4">
 
-      <article class="media-card">
+      <article
+        class="media-card clickable"
+        tabindex="0"
+        role="button"
+        (click)="openDrive(drive)"
+        (keydown.enter)="openDrive(drive)">
 
         <div class="media-card__image">
           <img
@@ -148,19 +153,23 @@
 
           <div class="meta-row">
             <mat-icon class="icon-sm">group</mat-icon>
-            {{ drive.participant_count }} {{ drive.participant_count === 1 ? 'participant' : 'participants' }}
+            {{ drive.participant_count }} joined · {{ drive.checked_in_count }} checked in
           </div>
 
-          <div class="card-actions" *ngIf="drive.is_organizer">
-            <span class="card-hint">
+          <div class="card-actions" *ngIf="drive.is_organizer || drive.checked_in">
+            <span class="card-hint" *ngIf="drive.is_organizer">
               <mat-icon class="icon-sm">star</mat-icon>
               Organiser
             </span>
+            <span class="card-hint attended" *ngIf="drive.checked_in">
+              <mat-icon class="icon-sm">verified</mat-icon>
+              Attended
+            </span>
             <button
-              *ngIf="drive.status === 'planned'"
+              *ngIf="drive.is_organizer && drive.status === 'planned'"
               type="button"
               class="btn btn-sm btn-outline-danger"
-              (click)="deleteDrive(drive)">
+              (click)="deleteDrive(drive); $event.stopPropagation()">
               <mat-icon class="icon-sm">delete_outline</mat-icon>
               Delete
             </button>
