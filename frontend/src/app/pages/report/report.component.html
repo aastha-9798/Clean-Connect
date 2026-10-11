@@ -99,7 +99,19 @@
           Use current location
         </button>
 
-        <div class="row g-3">
+        <app-location-picker
+          [latitude]="pickedLatitude"
+          [longitude]="pickedLongitude"
+          (locationChange)="onPinMoved($event)">
+        </app-location-picker>
+
+        <p class="accuracy-hint" *ngIf="locationAccuracy !== null && locationAccuracy > 30">
+          <mat-icon class="icon-sm">info</mat-icon>
+          Your device located you to within about {{ locationAccuracy }} m.
+          Drag the pin to the exact spot so volunteers can find it and check in.
+        </p>
+
+        <div class="row g-3 mt-1">
 
           <div class="col-6">
             <label class="form-label" for="report-latitude">Latitude</label>

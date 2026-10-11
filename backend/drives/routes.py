@@ -7,7 +7,8 @@ from backend.reports.models import Report
 from backend.drives.models import Drive , Participation, DriveImage
 from backend.drives.schemas import CreateDriveRequest, CheckInRequest
 from backend.drives import rules
-from backend.images import report_image_urls, save_images, delete_images
+from backend.images import save_images, delete_images
+from backend.reports.summary import report_summary
 
 router = APIRouter()
 
@@ -364,26 +365,10 @@ def get_feed(
         .all()
     )
 
-    reports = []
-    for report in open_reports:
-        images = report_image_urls(request, report)
-        reports.append({
-            "id": report.id,
-            "reported_by": report.user.username,
-            "reported_by_id": report.user_id, # lets the frontend show "Delete" to the reporter only
-            "date_reported": report.created_at,
-            "description": report.description,
-            "latitude": report.latitude,
-            "longitude": report.longitude,
-            "status": report.status,
-            "image": images[0] if images else None, # cover photo
-            "images": images
-        })
-
     return {
         "drives": [rules.drive_summary(request, drive) for drive in active_drives],
         "completed_drives": [rules.drive_summary(request, drive) for drive in completed_drives],
-        "reports": reports
+        "reports": [report_summary(request, report) for report in open_reports]
     }
 
 

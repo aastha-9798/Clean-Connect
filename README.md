@@ -8,7 +8,8 @@ Improper waste disposal is one of the most pressing environmental and public hea
 CleanConnect is a web application with a client–server architecture: an Angular single-page frontend talks to a FastAPI REST backend.
 
 - **Authentication** – Users sign up and log in with email and password. Passwords are hashed with Argon2. On login the API returns a short-lived JWT access token (15 minutes) and a refresh token (7 days); the frontend refreshes the access token automatically when it expires.
-- **Report an Issue** – Users upload 1 to 5 photos of a waste problem (up to 5 MB each) along with its exact geolocation (captured from the browser) and a description. The first photo is the cover shown on cards; the rest appear in a gallery in the report details.
+- **Report an Issue** – Users upload 1 to 5 photos of a waste problem (up to 5 MB each) along with its exact location and a description. The location can come from the browser and is fine-tuned by dragging a pin on a map (or by tapping the map). The first photo is the cover shown on cards; the rest appear in a gallery in the report details.
+- **Map** – A map page shows planned drives and open reports in the visible area (and recently cleaned spots when ticked), with a "Nearby" list sorted by distance from the user. Pins open the same report and drive details as the feed.
 - **Community Feed** – The home page shows active cleanup drives, open reports that don't have a drive yet, and recently cleaned spots with before/after photos.
 - **Cleanup Drives** – Any user can organise a drive for an open report by setting a date and description. Other users can join or leave the drive; the organiser is always a participant.
 - **On the day of a drive** – From 30 minutes before the start until 6 hours after, attendees check in from the drive dialog; the browser's location must be within 200 m of the spot (it is only used for the check-in and never stored). People who never pressed "Join" can check in too and are added automatically. Checked-in attendees can add up to 2 "after" photos each (10 per drive). The organiser sees who checked in and can remove a check-in that looks wrong.
@@ -19,7 +20,7 @@ CleanConnect is a web application with a client–server architecture: an Angula
 - **AI Assistant** – A chatbot powered by Google Gemini answers waste-management questions and can respond to an uploaded image. Replies stream in as they are written, and each user's chat history is saved.
 
 ## Tech Stack
-- **Frontend:** Angular 19 (standalone components), TypeScript, Angular Material, Bootstrap 5
+- **Frontend:** Angular 19 (standalone components), TypeScript, Angular Material, Bootstrap 5, Leaflet with OpenStreetMap tiles
 - **Backend:** Python, FastAPI, Uvicorn
 - **Database:** SQLite via SQLAlchemy 2 ORM
 - **Authentication:** JWT (python-jose), Argon2 password hashing (passlib)
@@ -64,6 +65,7 @@ frontend/
 | DELETE | `/drives/{drive_id}/check-in/{user_id}` | ✔ | Remove a check-in and that person's photos (organiser only) |
 | GET | `/user/me/reports` | ✔ | Reports raised by the current user |
 | GET | `/user/me/drives` | ✔ | Drives the current user participates in |
+| GET | `/map/items` | – | Planned drives and open reports inside a map area (`min_lat`, `max_lat`, `min_lng`, `max_lng`; `include_cleaned=true` adds completed drives) |
 | POST | `/ai/chat` | ✔ | Send a message (and optional image); the reply streams back as one JSON event per line (`chunk`, `done` or `error`) |
 | GET | `/ai/history` | ✔ | The current user's chat history |
 
@@ -104,7 +106,6 @@ npm start
 The app runs at `http://localhost:4200`. The backend URL is set in `frontend/src/environments/environment.ts`.
 
 ## Roadmap
-- Show drives near the user's location in the Community Feed
 - Waste image classification (dry vs wet waste)
 - Tagging local authorities on reports
 - Notifications for drive updates

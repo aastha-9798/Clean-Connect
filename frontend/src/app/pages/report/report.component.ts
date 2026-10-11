@@ -3,10 +3,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import {  ReactiveFormsModule,  FormGroup,  FormControl} from '@angular/forms';
 import { ReportService } from '../../core/services/report.service';
+import { LocationPickerComponent, PickedLocation } from '../../shared/location-picker/location-picker.component';
 
 @Component({
   selector: 'app-report',
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, LocationPickerComponent],
   templateUrl: './report.component.html',
   styleUrl: './report.component.css'
 })
@@ -61,6 +62,30 @@ export class ReportComponent implements OnInit {
     }
 
   }
+  // how precise "Use current location" was, in metres (laptops are often off by 100+ m)
+  locationAccuracy: number | null = null;
+
+  // the location as numbers for the pin picker (the form keeps them as text)
+  get pickedLatitude(): number | null {
+    const value = parseFloat(this.reportForm.value.latitude ?? '');
+    return isNaN(value) ? null : value;
+  }
+
+  get pickedLongitude(): number | null {
+    const value = parseFloat(this.reportForm.value.longitude ?? '');
+    return isNaN(value) ? null : value;
+  }
+
+  // the pin was dropped or dragged on the map
+  onPinMoved(location: PickedLocation): void {
+    this.reportForm.patchValue({
+      latitude: location.latitude.toString(),
+      longitude: location.longitude.toString()
+    });
+    this.locationAccuracy = null; // the user chose the exact spot themselves
+    this.errorMessage = '';
+  }
+
   removeImage(index: number): void {
     this.selectedImages.splice(index, 1);
     this.errorMessage = '';
@@ -85,6 +110,7 @@ export class ReportComponent implements OnInit {
           longitude: position.coords.longitude.toString()
 
         });
+        this.locationAccuracy = Math.round(position.coords.accuracy);
 
         this.errorMessage = '';
 
@@ -147,6 +173,7 @@ export class ReportComponent implements OnInit {
           this.reportForm.reset();
 
           this.selectedImages = [];
+          this.locationAccuracy = null;
 
         },
 

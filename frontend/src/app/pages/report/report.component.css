@@ -132,6 +132,19 @@
 }
 .upload-hint { font-size: 0.85rem; color: var(--cc-muted); }
 
+.accuracy-hint {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: var(--cc-radius-sm);
+  font-size: 0.85rem;
+  color: #92400e;
+  background: #fef3c7;
+}
+.accuracy-hint .mat-icon { flex-shrink: 0; margin-top: 1px; }
+
 @media (max-width: 575.98px) {
   .report-card { padding: 20px 16px; }
 }

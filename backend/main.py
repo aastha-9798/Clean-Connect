@@ -8,6 +8,7 @@ from backend.drives.models import Participation, Drive
 from backend.drives.routes import router as drives_router
 from backend.user.routes import router as user_router
 from backend.ai.routes import router as ai_router
+from backend.map.routes import router as map_router
 import os
 
 app = FastAPI()
@@ -35,6 +36,7 @@ app.include_router(reports_router, prefix="/reports", tags=["Reports"])
 app.include_router(drives_router, prefix="/drives", tags=["Drives"])
 app.include_router(user_router, prefix="/user", tags=["User"])
 app.include_router(ai_router, prefix="/ai", tags=["AI"])
+app.include_router(map_router, prefix="/map", tags=["Map"])
 
 @app.get("/")
 def root():

@@ -335,6 +335,37 @@ form.ng-submitted .form-control.ng-invalid ~ .invalid-feedback { display: block;
   .auth-card { padding: 28px 20px 22px; }
 }
 
+/* ---------- Map pins (Leaflet divIcons, see shared/map-pins.ts) ---------- */
+.cc-pin-wrapper { background: none; border: none; }
+.cc-pin {
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+.cc-pin .material-icons { transform: rotate(45deg); font-size: 18px; color: #fff; }
+.cc-pin-drive { background: var(--cc-green-700); }
+.cc-pin-report { background: #d97706; }
+.cc-pin-cleaned { background: #0d9488; }
+.cc-pin-picker { background: #dc2626; }
+/* small colour dots matching the pins (map filters and lists) */
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.legend-drive { background: var(--cc-green-700); }
+.legend-report { background: #d97706; }
+.legend-cleaned { background: #0d9488; }
+.leaflet-container { font-family: var(--bs-body-font-family); }
+
+/* map page popups (built by Leaflet, outside any component template) */
+.map-popup { display: flex; flex-direction: column; gap: 6px; }
+.map-popup img { width: 100%; height: 110px; object-fit: cover; border-radius: 8px; }
+.map-popup strong { font-size: 0.92rem; line-height: 1.3; }
+.map-popup span { font-size: 0.78rem; color: var(--cc-muted); }
+.map-popup .btn { margin-top: 4px; }
+
 /* ---------- Dialogs (shared by report and drive dialogs) ---------- */
 /* wider than Material's default 560px cap (see DETAIL_DIALOG_CONFIG) */
 .cc-dialog { --mat-dialog-container-max-width: 760px; }

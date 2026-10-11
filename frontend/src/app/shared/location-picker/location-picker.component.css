@@ -1,0 +1,33 @@
+.picker {
+  position: relative;
+  border-radius: var(--cc-radius);
+  overflow: hidden;
+  border: 1px solid var(--cc-border);
+}
+
+.picker-map {
+  height: 280px;
+  z-index: 0;
+  cursor: crosshair;
+}
+
+.picker-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 500;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(15, 25, 20, 0.7);
+  pointer-events: none;
+}
+
+@media (max-width: 575.98px) {
+  .picker-map { height: 240px; }
+  .picker-hint { white-space: normal; text-align: center; width: max-content; max-width: 90%; }
+}

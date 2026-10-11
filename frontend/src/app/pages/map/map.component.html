@@ -1,0 +1,92 @@
+<div class="map-page">
+
+  <aside class="map-sidebar">
+
+    <header class="map-header">
+      <h1>Map</h1>
+      <p>Cleanup drives and open reports around you. Move the map to explore other areas.</p>
+
+      <div class="map-filters">
+
+        <label class="filter-chip" [class.on]="showDrives">
+          <input type="checkbox" [(ngModel)]="showDrives" (ngModelChange)="onFiltersChanged()">
+          <span class="legend-dot legend-drive"></span>
+          Drives
+          <span class="filter-count">{{ count('drive') }}</span>
+        </label>
+
+        <label class="filter-chip" [class.on]="showReports">
+          <input type="checkbox" [(ngModel)]="showReports" (ngModelChange)="onFiltersChanged()">
+          <span class="legend-dot legend-report"></span>
+          Reports
+          <span class="filter-count">{{ count('report') }}</span>
+        </label>
+
+        <label class="filter-check">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="showCleaned"
+            (ngModelChange)="onCleanedToggled()">
+          <span class="legend-dot legend-cleaned"></span>
+          Recently cleaned
+        </label>
+
+      </div>
+    </header>
+
+    <div class="alert alert-secondary map-notice" *ngIf="notice">{{ notice }}</div>
+
+    <section class="nearby">
+
+      <h2 class="nearby-title">
+        Nearby
+        <span class="nearby-sub">sorted by distance {{ distanceFrom }}</span>
+      </h2>
+
+      <div class="nearby-empty" *ngIf="!loading && visibleItems.length === 0">
+        <mat-icon>travel_explore</mat-icon>
+        <p>Nothing in this area yet. Zoom out or move the map to look around.</p>
+      </div>
+
+      <ul class="nearby-list">
+        <li *ngFor="let item of visibleItems">
+          <button type="button" class="nearby-item" (click)="focusItem(item)">
+            <span class="nearby-thumb">
+              <img *ngIf="item.image" [src]="item.image" alt="">
+              <span class="legend-dot" [ngClass]="'legend-' + item.kind"></span>
+            </span>
+            <span class="nearby-text">
+              <strong>{{ item.title }}</strong>
+              <span>{{ item.subtitle }}</span>
+            </span>
+            <span class="nearby-distance">{{ formatDistance(item.distance) }}</span>
+          </button>
+        </li>
+      </ul>
+
+    </section>
+
+  </aside>
+
+  <div class="map-area">
+
+    <div #mapElement class="map-canvas" aria-label="Map of drives and reports"></div>
+
+    <button
+      type="button"
+      class="locate-btn"
+      title="Show my location"
+      aria-label="Show my location"
+      (click)="locateMe()">
+      <mat-icon>my_location</mat-icon>
+    </button>
+
+    <span class="map-loading" *ngIf="loading">
+      <span class="spinner-border spinner-border-sm"></span>
+      Loading…
+    </span>
+
+  </div>
+
+</div>

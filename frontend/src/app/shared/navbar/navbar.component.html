@@ -29,6 +29,15 @@
         Feed
       </a>
 
+      <a
+        class="nav-item"
+        routerLink="/map"
+        routerLinkActive="active"
+        (click)="menuOpen = false">
+        <mat-icon class="icon-sm">map</mat-icon>
+        Map
+      </a>
+
       <!-- ng-container: like div but only used to group elements, doesnt show on browser -->
       <ng-container *ngIf="!authService.isLoggedIn()">
 

@@ -7,8 +7,8 @@ class Report(Base):  #stores all the reports uploaded by users
     __tablename__ = "reports"
     id = Column(Integer , primary_key=True)
     user_id= Column(String, ForeignKey("users.id"), index=True)
-    latitude= Column(Float, nullable=False)
-    longitude= Column(Float, nullable=False)
+    latitude= Column(Float, nullable=False, index=True) # indexed for the map's area queries
+    longitude= Column(Float, nullable=False, index=True)
     description = Column(Text, nullable=True)
     status= Column(String, default="pending", nullable=False)
     created_at = Column(

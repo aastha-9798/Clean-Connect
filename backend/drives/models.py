@@ -11,8 +11,8 @@ class Drive(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
     description = Column(Text, nullable=False)
     scheduled_at = Column(UTCDateTime, nullable=False)
-    latitude= Column(Float, nullable=False)
-    longitude= Column(Float, nullable=False)
+    latitude= Column(Float, nullable=False, index=True) # indexed for the map's area queries
+    longitude= Column(Float, nullable=False, index=True)
     status= Column(String, default="planned", nullable=False) # planned -> completed, or cancelled if not completed in time
     completed_at = Column(UTCDateTime, nullable=True)
     created_at = Column(
