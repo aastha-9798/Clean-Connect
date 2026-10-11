@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from PIL import Image
 from pathlib import Path
 from backend.ai.models import Conversation, Message
+from sqlalchemy import literal_column
 
 # Load environment variables
 load_dotenv()
@@ -40,7 +41,7 @@ def get_last_messages(db, conversation_id, limit=6):
     messages = (
         db.query(Message)
         .filter_by(conversation_id=conversation_id)
-        .order_by(Message.created_at.desc())
+        .order_by(Message.created_at.desc(), literal_column("messages.rowid").desc()) # rowid breaks ties in insertion order
         .limit(limit)
         .all()
     )
@@ -97,13 +98,13 @@ def handle_user_input(db, user_id, user_message, image_path=None):
         
         image = Image.open(image_path)
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.8-flash",
             contents=[prompt, image]
         )
 
     else:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.8-flash",
             contents=prompt
         )
 

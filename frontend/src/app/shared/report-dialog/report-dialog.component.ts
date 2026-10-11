@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { DriveService } from '../../core/services/drive.service';
+import { APP_TIMEZONE_OFFSET } from '../../core/constants/timezone';
 
 @Component({
   selector: 'app-report-dialog',
@@ -60,8 +61,9 @@ export class ReportDialogComponent {
       description:
         this.driveForm.value.description!,
 
+      // the picker gives a time with no timezone ("2026-10-23T21:30"); read it as IST
       scheduled_at: new Date(
-        this.driveForm.value.scheduled_at!
+        this.driveForm.value.scheduled_at! + APP_TIMEZONE_OFFSET
       ).toISOString()
 
     })

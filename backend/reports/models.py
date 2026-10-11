@@ -1,6 +1,6 @@
-from sqlalchemy import Column, String, ForeignKey, Integer, DateTime, Text, Float
+from sqlalchemy import Column, String, ForeignKey, Integer, Text, Float
 from sqlalchemy.orm import relationship
-from backend.database import Base
+from backend.database import Base, UTCDateTime
 from datetime import datetime , timezone
 
 class Report(Base):  #stores all the reports uploaded by users
@@ -13,7 +13,7 @@ class Report(Base):  #stores all the reports uploaded by users
     description = Column(Text, nullable=True)
     status= Column(String, default="pending", nullable=False)
     created_at = Column(
-        DateTime,
+        UTCDateTime,
         default=lambda: datetime.now(timezone.utc),
         nullable=False
     )

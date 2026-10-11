@@ -1,20 +1,18 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, Request
 from sqlalchemy.orm import Session
+from sqlalchemy import literal_column
 from backend.ai.service import handle_user_input
 from backend.database import get_db
 from backend.authentication.dependencies import get_current_user
 from backend.ai.models import Message
 from backend.ai.service import get_or_create_conversation
-import shutil
-import uuid
-import os
-from pathlib import Path
+from backend.images import save_image
 
 router = APIRouter()
 
 
 @router.post("/chat")
-async def chat(
+def chat( # plain def (not async): FastAPI runs it in a thread pool, so the slow Gemini call doesn't block other requests
     message: str = Form(...),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
@@ -23,11 +21,7 @@ async def chat(
     image_path = None
 
     if image:
-        file_name = f"{uuid.uuid4()}.jpg"
-        image_path = Path(f"uploads/{current_user.id}_{file_name}")
-        image_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(image_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
+        image_path = save_image(image.file.read()) # checks size and real image format, then saves it
 
     response = handle_user_input(
         db=db,
@@ -50,7 +44,7 @@ def get_chat_history(
     messages = (
         db.query(Message)
         .filter_by(conversation_id=conversation.id)
-        .order_by(Message.created_at.asc())
+        .order_by(Message.created_at.asc(), literal_column("messages.rowid").asc()) # rowid breaks ties in insertion order
         .all()
     )
     history = []

@@ -1,5 +1,5 @@
-from backend.database import Base 
-from sqlalchemy import Column, String, ForeignKey, Text , DateTime, Float, Integer
+from backend.database import Base, UTCDateTime
+from sqlalchemy import Column, String, ForeignKey, Text , Float, Integer
 from datetime import datetime , timezone
 from sqlalchemy.orm import relationship
 import uuid
@@ -10,12 +10,12 @@ class Drive(Base):
     report_id = Column(Integer, ForeignKey("reports.id"), nullable=False, index=True)
     user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
     description = Column(Text, nullable=False)
-    scheduled_at = Column(DateTime, nullable=False)
+    scheduled_at = Column(UTCDateTime, nullable=False)
     latitude= Column(Float, nullable=False)
     longitude= Column(Float, nullable=False)
     status= Column(String, default="planned", nullable=False)
     created_at = Column(
-        DateTime,
+        UTCDateTime,
         default=lambda: datetime.now(timezone.utc),
         nullable=False
     )
@@ -26,7 +26,7 @@ class Participation(Base):
     user_id= Column(String, ForeignKey("users.id"), primary_key=True)
     drive_id= Column(String, ForeignKey("drives.id"), primary_key=True)
     joined_at = Column(
-        DateTime,
+        UTCDateTime,
         default=lambda: datetime.now(timezone.utc),
         nullable=False
     )

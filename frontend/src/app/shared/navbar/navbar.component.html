@@ -13,7 +13,8 @@
         Feed
       </a>
 
-      <ng-container *ngIf="!authService.isLoggedIn()"> //like div but only used to group elements , doesnt show on browser
+      <!-- ng-container: like div but only used to group elements, doesnt show on browser -->
+      <ng-container *ngIf="!authService.isLoggedIn()">
 
         <a
           class="nav-link"

@@ -1,5 +1,3 @@
-from urllib import request
-
 from fastapi import APIRouter, HTTPException, UploadFile, File , Form , Depends #depends used to use dependencies
 from fastapi import Form
 from fastapi import Request
@@ -8,8 +6,7 @@ from sqlalchemy.orm import Session #to type hint the database session
 from backend.authentication.dependencies import get_current_user
 from backend.reports.models import Report
 from backend.reports.schemas import ReportResponse
-import uuid
-import os
+from backend.images import save_image
 
 router = APIRouter()
 
@@ -26,21 +23,11 @@ async def get_data(
     if latitude < -90 or latitude > 90:
         raise HTTPException(status_code=400, detail="Invalid latitude value")
     if longitude < -180 or longitude > 180:
-        raise HTTPException(status_code=400, detail="Invalid longitude value")  
-    if not image.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Invalid file type. Only images are allowed.")
+        raise HTTPException(status_code=400, detail="Invalid longitude value")
 
-    #size check
     contents= await image.read()
-    if len(contents) > 5*1024*1024:
-        raise HTTPException(status_code=400, detail="File size exceeds the limit of 5MB.")
-    
-    name, ext = os.path.splitext(image.filename)
-    new_filename= str(uuid.uuid4()) + ext
-    file_path=os.path.join("uploads", new_filename)
-    with open(file_path, "wb") as f:
-        f.write(contents)
-    
+    file_path = save_image(contents) # checks size and real image format, then saves it
+
     report = Report(
         user_id= curr_user.id,
         image_path=file_path,

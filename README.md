@@ -1,18 +1,99 @@
 # **CleanConnect**
-This repository contains the documentation for CleanConnect.
+A community platform for reporting waste problems and organising cleanup drives.
+
 ## Project Overview
 Improper waste disposal is one of the most pressing environmental and public health challenges faced by urban and semi-urban areas today. Waste problems often go unreported, or reported cases lack sufficient evidence and location accuracy. Additionally, community participation in cleanliness drives is limited due to poor awareness and coordination. Improper waste management has a direct impact on environmental sustainability, public health, and the quality of life. Uncollected and unsegregated waste leads to air, water, and soil pollution, increases the spread of diseases, and contributes to climate change through greenhouse gas emissions.
+
 ## Approach
-The current approach involves designing as a web-based application that integrates geo-location services, image processing, and community engagement features to create an efficient waste management platform. The system follows a client–server architecture. The frontend allows users to register/login, upload geo-tagged images, report waste issues, tag authorities, and initiate cleanliness drives. 
+CleanConnect is a web application with a client–server architecture: an Angular single-page frontend talks to a FastAPI REST backend.
 
-The backend handles data storage, user authentication, notification services, and analytics. 
+- **Authentication** – Users sign up and log in with email and password. Passwords are hashed with Argon2. On login the API returns a short-lived JWT access token (15 minutes) and a refresh token (7 days); the frontend refreshes the access token automatically when it expires.
+- **Report an Issue** – Users upload a photo of a waste problem along with its exact geolocation (captured from the browser) and a description.
+- **Community Feed** – The home page shows active cleanup drives and open reports that don't have a drive yet.
+- **Cleanup Drives** – Any user can organise a drive for an open report by setting a date and description. Other users can join or leave the drive; the organiser is always a participant.
+- **Profile** – Users can see the reports they've raised and the drives they're part of.
+- **AI Assistant** – A chatbot powered by Google Gemini answers waste-management questions and can respond to an uploaded image. Each user's chat history is saved.
 
-Authentication has been implemented with JWT access tokens and refresh tokens. On successful authentication the API returns a short lived JWT access token that expires after 15 minutes, and a refresh token that expires after 7 days. User can also upload reports using the “Raise an Issue” section of our website. It allows users to share the exact geolocation of their report along with picture of the concern being reported.  
-
-The geolocation enables users to view cleanliness drives organised near them, I.e. in their locality or nearby. This feature is to be added in the “Home” tab as “Community Feed”.
 ## Tech Stack
-- Frontend: HTML, CSS, JavaScript 
-- Backend: Python (Flask/Django) 
-- Database: MySQL / PostgreSQL 
-- Computer Vision: OpenCV with Python for waste image classification (dry vs wet waste) 
-- Cloud & Storage: Firebase or AWS for authentication, real-time notifications, and image storage. 
+- **Frontend:** Angular 19 (standalone components), TypeScript, Angular Material, Bootstrap 5
+- **Backend:** Python, FastAPI, Uvicorn
+- **Database:** SQLite via SQLAlchemy 2 ORM
+- **Authentication:** JWT (python-jose), Argon2 password hashing (passlib)
+- **AI:** Google Gemini (`google-genai` SDK), Pillow for image handling
+- **Storage:** Uploaded images are stored on the server's local disk in `uploads/` and served at `/uploads`
+
+## Project Structure
+```
+backend/
+  main.py             FastAPI app, CORS, router registration, /uploads static mount
+  database.py         SQLAlchemy engine and session (SQLite)
+  authentication/     signup, login, token refresh, current-user dependency
+  reports/            report upload
+  drives/             create / join / leave drives, community feed
+  user/               the current user's reports and drives
+  ai/                 Gemini chatbot and chat history
+frontend/
+  src/app/core/       services, models, auth guard, auth interceptor
+  src/app/pages/      feed, login, signup, report, profile, chat
+  src/app/shared/     navbar, report dialog, drive dialog
+```
+
+## API Overview
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/auth/signup` | – | Create an account |
+| POST | `/auth/login` | – | Get access and refresh tokens |
+| POST | `/auth/refresh` | Refresh token | Get a new access token |
+| GET | `/auth/me` | ✔ | Current user's details |
+| POST | `/reports/upload` | ✔ | Upload a report (multipart: image, latitude, longitude, description) |
+| GET | `/drives/feed` | – | Active drives and open reports |
+| POST | `/drives/` | ✔ | Create a drive for a report |
+| POST | `/drives/{drive_id}/join` | ✔ | Join a drive |
+| DELETE | `/drives/{drive_id}/leave` | ✔ | Leave a drive |
+| GET | `/user/me/reports` | ✔ | Reports raised by the current user |
+| GET | `/user/me/drives` | ✔ | Drives the current user participates in |
+| POST | `/ai/chat` | ✔ | Send a message (and optional image) to the assistant |
+| GET | `/ai/history` | ✔ | The current user's chat history |
+
+Interactive API docs are available at `http://127.0.0.1:8000/docs` while the backend is running.
+
+## Getting Started
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18.19+ and npm
+- A Google Gemini API key
+
+### Backend
+1. Create a `.env` file in the repository root:
+   ```
+   SECRET_KEY=<a long random string used to sign JWTs>
+   GOOGLE_API_KEY=<your Gemini API key>
+   ```
+2. Create a virtual environment and install dependencies (from the repository root):
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+   On macOS/Linux, activate with `source venv/bin/activate`.
+3. Start the server **from the repository root** (the database and `uploads/` paths are relative to it):
+   ```bash
+   uvicorn backend.main:app --reload
+   ```
+   The API runs at `http://127.0.0.1:8000`. The SQLite database (`backend/cleanconnect.db`) and its tables are created automatically on first run.
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm start
+```
+The app runs at `http://localhost:4200`. The backend URL is set in `frontend/src/environments/environment.ts`.
+
+## Roadmap
+- Show drives near the user's location in the Community Feed
+- Waste image classification (dry vs wet waste)
+- Tagging local authorities on reports
+- Notifications for drive updates
+- Marking reports as resolved and drives as completed

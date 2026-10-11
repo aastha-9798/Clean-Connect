@@ -1,16 +1,15 @@
-from sqlalchemy import Column, String, ForeignKey, DateTime
+from sqlalchemy import Column, String, ForeignKey, Text
 from sqlalchemy.orm import relationship
-from backend.database import Base
+from backend.database import Base, UTCDateTime
 from datetime import datetime, timezone
 import uuid
-from sqlalchemy import Column, String, ForeignKey, DateTime, Text
 
 class Conversation(Base):
     __tablename__ = "conversations"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(UTCDateTime, default=lambda: datetime.now(timezone.utc)) # lambda so the time is taken per row, not once at import
     user = relationship("User")
     messages = relationship("Message", back_populates="conversation", cascade="all, delete")
 
@@ -25,4 +24,4 @@ class Message(Base):
     content = Column(Text, nullable=False)
     image_path = Column(String, nullable=True)
     conversation = relationship("Conversation", back_populates="messages")
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(UTCDateTime, default=lambda: datetime.now(timezone.utc))

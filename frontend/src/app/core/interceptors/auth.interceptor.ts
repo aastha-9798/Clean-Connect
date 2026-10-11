@@ -32,9 +32,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
       return authService.refreshAccessToken().pipe(
-         switchMap((response) => {
-          console.log(response);
-          
+        // only a failed refresh logs the user out; this sits before switchMap
+        // so errors from the retried request go back to the caller instead
+        catchError((refreshError) => {
+          authService.logout();
+          router.navigate(['/login']);
+          return throwError(() => refreshError);
+        }),
+        switchMap((response) => {
           const retryReq = req.clone({
             setHeaders: {
               Authorization:
@@ -42,11 +47,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             }
           });
           return next(retryReq);
-        }),
-        catchError((refreshError) => {
-          authService.logout();
-          router.navigate(['/login']);
-          return throwError(() => refreshError);
         })
 
       );
