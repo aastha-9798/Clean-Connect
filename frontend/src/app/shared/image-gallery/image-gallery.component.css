@@ -1,8 +1,9 @@
+/* size can be adjusted by the parent through these CSS variables */
 :host { display: block; }
 
 .gallery-main {
   position: relative;
-  height: 260px;
+  height: var(--gallery-height, 260px);
   background: var(--cc-green-50);
 }
 .gallery-open {
@@ -73,7 +74,7 @@
 .gallery-thumbs {
   display: flex;
   gap: 8px;
-  padding: 12px 24px 0;
+  padding: 12px var(--gallery-inset, 24px) 0;
   overflow-x: auto;
 }
 .thumb {
@@ -94,6 +95,6 @@
 .thumb.active { opacity: 1; border-color: var(--cc-green-600); }
 
 @media (max-width: 575.98px) {
-  .gallery-main { height: 200px; }
-  .gallery-thumbs { padding: 12px 18px 0; }
+  .gallery-main { height: var(--gallery-height-mobile, 200px); }
+  .gallery-thumbs { padding: 12px var(--gallery-inset-mobile, 18px) 0; }
 }

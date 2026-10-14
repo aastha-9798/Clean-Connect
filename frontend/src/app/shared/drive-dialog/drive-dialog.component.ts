@@ -53,6 +53,11 @@ export class DriveDialogComponent {
     return this.authService.getCurrentUserId() === this.drive.organizer_id;
   }
 
+  // the drive has "after" photos: show the before/after comparison and impact banner first
+  get hasAftermath(): boolean {
+    return this.drive.after_images.length > 0;
+  }
+
   get isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
   }

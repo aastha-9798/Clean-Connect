@@ -9,6 +9,7 @@ import { DriveDialogComponent } from '../../shared/drive-dialog/drive-dialog.com
 
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ReportDialogComponent } from '../../shared/report-dialog/report-dialog.component';
+import { DETAIL_DIALOG_CONFIG } from '../../core/constants/dialog';
 
 @Component({
   selector: 'app-feed',
@@ -50,7 +51,7 @@ export class FeedComponent implements OnInit{
     const dialogRef = this.dialog.open(
       ReportDialogComponent,
       {
-        width: '700px',
+        ...DETAIL_DIALOG_CONFIG,
         data: report
       }
     );
@@ -67,7 +68,7 @@ export class FeedComponent implements OnInit{
     const dialogRef = this.dialog.open(
       DriveDialogComponent,
       {
-        width: '700px',
+        ...DETAIL_DIALOG_CONFIG,
         data: drive
       }
     );

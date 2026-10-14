@@ -336,12 +336,27 @@ form.ng-submitted .form-control.ng-invalid ~ .invalid-feedback { display: block;
 }
 
 /* ---------- Dialogs (shared by report and drive dialogs) ---------- */
+/* wider than Material's default 560px cap (see DETAIL_DIALOG_CONFIG) */
+.cc-dialog { --mat-dialog-container-max-width: 760px; }
+/* only the content area scrolls - the dialog frame itself never does */
+.cc-dialog .mat-mdc-dialog-surface { overflow: hidden; }
+
 .dialog-shell {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0; /* lets the content area shrink and scroll inside the 90vh dialog */
   --mat-dialog-content-padding: 0;
   --mat-dialog-with-actions-content-padding: 0;
 }
-.dialog-shell .mat-mdc-dialog-content { max-height: 75vh; }
+.dialog-shell .mat-mdc-dialog-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+}
+.dialog-shell .dialog-footer { flex-shrink: 0; } /* always visible below the scrolling content */
 .dialog-shell .btn { white-space: nowrap; }
 
 /* full-screen photo viewer (opened from the image gallery) */

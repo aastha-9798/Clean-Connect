@@ -10,14 +10,59 @@
 
   <div mat-dialog-content>
 
-    <app-image-gallery
-      [images]="drive.images"
-      alt="Photo of the drive location before the cleanup">
-      <span class="status-pill" [ngClass]="'status-' + drive.status">
-        <mat-icon class="icon-sm">{{ statusIcon }}</mat-icon>
-        {{ statusLabel }}
+    <!-- once there are "after" photos, the before/after comparison leads the dialog -->
+    <div class="ba-grid" *ngIf="hasAftermath; else beforeOnly">
+
+      <!-- "after" comes first in the page so it is on top when stacked on phones -->
+      <div class="ba-col ba-col-after">
+        <app-image-gallery
+          [images]="drive.after_images"
+          alt="Photo after the cleanup">
+          <span class="ba-tag ba-tag-after">
+            <mat-icon class="icon-sm">auto_awesome</mat-icon>
+            After
+          </span>
+        </app-image-gallery>
+      </div>
+
+      <div class="ba-col ba-col-before">
+        <app-image-gallery
+          [images]="drive.images"
+          alt="Photo before the cleanup">
+          <span class="ba-tag">Before</span>
+        </app-image-gallery>
+      </div>
+
+    </div>
+
+    <ng-template #beforeOnly>
+      <app-image-gallery
+        [images]="drive.images"
+        alt="Photo of the drive location before the cleanup">
+        <span class="status-pill" [ngClass]="'status-' + drive.status">
+          <mat-icon class="icon-sm">{{ statusIcon }}</mat-icon>
+          {{ statusLabel }}
+        </span>
+      </app-image-gallery>
+    </ng-template>
+
+    <!-- what the drive achieved (or is achieving) -->
+    <div
+      class="impact"
+      [class.impact-done]="drive.status === 'completed'"
+      *ngIf="hasAftermath && drive.status !== 'cancelled'">
+      <span class="impact-icon">
+        <mat-icon>{{ drive.status === 'completed' ? 'task_alt' : 'cleaning_services' }}</mat-icon>
       </span>
-    </app-image-gallery>
+      <div class="impact-text">
+        <strong *ngIf="drive.status === 'completed'">Cleaned up on {{ drive.completed_at | date:'mediumDate' }}</strong>
+        <strong *ngIf="drive.status === 'planned'">Cleanup in progress</strong>
+        <span>
+          {{ drive.checked_in_count }} {{ drive.checked_in_count === 1 ? 'volunteer' : 'volunteers' }} checked in ·
+          {{ drive.after_images.length }} "after" {{ drive.after_images.length === 1 ? 'photo' : 'photos' }}
+        </span>
+      </div>
+    </div>
 
     <div class="dialog-body">
 
@@ -28,6 +73,13 @@
       <div class="alert alert-secondary cancelled-note" *ngIf="drive.status === 'cancelled'">
         This drive was cancelled because it wasn't marked as completed within 2 days of its start.
       </div>
+
+      <!-- on the day of a planned drive, checking in and adding photos is the main thing to do -->
+      <app-drive-day-panel
+        *ngIf="isLoggedIn && drive.status === 'planned'"
+        [drive]="drive"
+        (changed)="onPanelChanged()">
+      </app-drive-day-panel>
 
       <div class="detail-list">
 
@@ -81,24 +133,9 @@
 
       </div>
 
-    </div>
-
-    <section class="after-section" *ngIf="drive.after_images.length > 0">
-      <h3 class="after-title">
-        <mat-icon class="icon-sm">auto_awesome</mat-icon>
-        After the cleanup
-        <span class="count-chip">{{ drive.after_images.length }}</span>
-      </h3>
-      <app-image-gallery
-        [images]="drive.after_images"
-        alt="Photo after the cleanup">
-      </app-image-gallery>
-    </section>
-
-    <div class="dialog-body">
-
+      <!-- after a drive is completed, attendees can still add their photos (until the 2-day deadline) -->
       <app-drive-day-panel
-        *ngIf="isLoggedIn && drive.status !== 'cancelled'"
+        *ngIf="isLoggedIn && drive.status === 'completed'"
         [drive]="drive"
         (changed)="onPanelChanged()">
       </app-drive-day-panel>
